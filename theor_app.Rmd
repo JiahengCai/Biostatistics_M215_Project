@@ -1,0 +1,112 @@
+---
+title: "Theoretical Approach"
+author: "Jiaheng Cai"
+date: "11/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(KMsurv)
+library(metaheuristicOpt)
+```
+
+This file is designated to explore the performance of metaheuristic algorithms on
+likelihood estimation of survival analysis model. 
+
+# Likelihood function for right-cencored data
+
+This is a relatively easy question to discover. Recall that the likelihood function
+for right-censored data:
+
+$$
+\begin{align*}
+L&\propto\prod^{n}_{i=1}f(t_i)^{\delta_i}S(t_i)^{1-\delta_i}
+\end{align*}
+$$
+
+A quick example, the 6-MP dataset:
+
+```{r}
+data(drug6mp)
+```
+
+If we consider the time to relapse of 6-MP group has a exponential distribution
+with parameter $\lambda$, we can construct the following likelihood function:
+
+$$
+\begin{align*}
+L&\propto\prod^{n}_{i=1}f(t_i)^{\delta_i}S(t_i)^{1-\delta_i}\\
+&\propto(\lambda e^{-\lambda t_i})^{\delta_i}(e^{-\lambda t_i})^{1-\delta_i}\\
+&\propto\lambda^{\sum^{n}_{i=1}\delta_i}e^{-\lambda\sum_{i=1}^nt_i}
+\end{align*}
+$$
+
+The Log-likelihood is 
+
+$$
+\begin{align*}
+l&\propto ln\lambda\sum_{i=1}^n\delta_i-\lambda\sum_{i=1}^nt_i
+\end{align*}
+$$
+
+Take derivative against $\lambda$ and solve at 0
+
+$$
+\begin{align*}
+\frac{\sum_{i=1}^n\delta_i}{\lambda}-\sum_{i=1}^nt_i &= 0\\
+\hat{\lambda}&=\frac{\sum_{i=1}^n\delta_i}{\sum_{i=1}^nt_i}
+\end{align*}
+$$
+
+Check for second derivative to confirm it is a maximum (skipped). If we write code
+in r, it will be like
+
+```{r}
+(lambdahat = sum(drug6mp$relapse) / sum(drug6mp$t2))
+```
+
+This is a easy question, we can tackle it with analytical solution. Let's try PSO
+
+```{r, results='hide'}
+explikeli <- function(lambda) {
+  likeli = log(lambda)*sum(drug6mp$relapse) - lambda*sum(drug6mp$t2)
+  return(likeli)
+}
+
+ax = matrix(1:500)
+bx = matrix(0,500,1)
+
+for (i in 1:500){
+  bx[i] = PSO(explikeli, optimType = 'MAX', rangeVar = matrix(c(0,1),2,1), numVar = 1, maxIter = i)
+}
+
+
+
+```
+
+```{r}
+lambdahat = seq(0,1, length = 100000)
+explikelihat = explikeli(lambdahat)
+plot(0,0,xlim = c(0,0.3),ylim = c(-100,1),type = "n")
+lines(lambdahat,explikelihat)
+```
+
+
+
+
+
+# Likelihood function for left-truncated, right-cencored data
+
+Recall that when we do not have information of truncation time distribution, the 
+likelihood function reduced to 
+
+$$
+\begin{align*}
+L_c(S)&=\prod^{n}_{i}\frac{f(x_i^*)}{S(y_i^*)}
+\end{align*}
+$$
