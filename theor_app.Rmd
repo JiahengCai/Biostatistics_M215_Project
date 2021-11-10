@@ -18,6 +18,15 @@ library(metaheuristicOpt)
 This file is designated to explore the performance of metaheuristic algorithms on
 likelihood estimation of survival analysis model. 
 
+In real life, there are problems that we cannot give an analytical solution. 
+Also, there are problems which we cannot use gradient-based optimization 
+algorithms, since it is hard or impossible to calculate the derivative/gradient 
+of the target function. This is the place where metaheuristic algorithms can take 
+advantage. Also, metaheuristic algorithms tend to find global optimal points. 
+We will use some examples to illustrate metaheuristic algorithms. We focus on the 
+questions with analytical solution in order to discover the accuracy of metaheuristic
+algorithms. 
+
 # Likelihood function for right-cencored data
 
 This is a relatively easy question to discover. Recall that the likelihood function
@@ -70,20 +79,44 @@ in r, it will be like
 (lambdahat = sum(drug6mp$relapse) / sum(drug6mp$t2))
 ```
 
-This is a easy question, we can tackle it with analytical solution. Let's try PSO
+This is a easy question, we can tackle it with analytical solution. Let's try
+some metaheuristic algorithm. First, we will introduce PSO, particle swarm optimization. 
+The idea of PSO is that, when a particle (e.g. a bird) is in a group (e.g. a flock)
+of bird, the individual particle can profit from the information from all other 
+individuals. The mathematical model is:
+
+$$
+\begin{align*}
+X^i(t+1)&=X^i(t)+V^i(t+1)\\
+V^i(t+1)&=wV^i(t)+c_1r_1(pbest^i-X^i(t))+c_2r_2(gbest-X^i(t))
+\end{align*}
+$$
+
+The idea is that, we first generate P particles, there initial position is $X^i$.
+Also, we assign a initial velocity to each particle, $V^i$. In each iteration, we 
+update the velocity by the following criteria: 
+
+- The velocity of last time, adjusted by a inertial parameter, $w$.
+- The difference between particle i's personal best position, pbest 
+(best minimize/maximize target function by this particle so far), and it's last
+position. This difference is adjusted by a random number between 0 and 1, $r_1$,
+and a cognitive parameter, $c_1$, which controls the effect of 'exploration'
+- The difference between the global best position by all particle, gbest 
+(best minimize/maximize target function by all particle so far), and particle i's 
+last position. This difference is adjusted by a random number between 0 and 1, $r_2$,
+and a social parameter, $c_2$, which controls the effect of 'exploitation'
+
+The following r code illustrate how PSO works:
 
 ```{r, results='hide'}
 explikeli <- function(lambda) {
   likeli = log(lambda)*sum(drug6mp$relapse) - lambda*sum(drug6mp$t2)
   return(likeli)
-}
+} #define the target function
 
-ax = matrix(1:500)
-bx = matrix(0,500,1)
+(PSO(explikeli, optimType = 'MAX', rangeVar = matrix(c(0,1),2,1), 
+    numVar = 1, maxIter = 1))
 
-for (i in 1:500){
-  bx[i] = PSO(explikeli, optimType = 'MAX', rangeVar = matrix(c(0,1),2,1), numVar = 1, maxIter = i)
-}
 
 
 
