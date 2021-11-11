@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
 library(KMsurv)
 library(metaheuristicOpt)
@@ -26,6 +25,9 @@ advantage. Also, metaheuristic algorithms tend to find global optimal points.
 We will use some examples to illustrate metaheuristic algorithms. We focus on the 
 questions with analytical solution in order to discover the accuracy of metaheuristic
 algorithms. 
+
+# Introduction to metaheuristics algorithms
+
 
 # Likelihood function for right-cencored data
 
@@ -72,11 +74,22 @@ $$
 \end{align*}
 $$
 
-Check for second derivative to confirm it is a maximum (skipped). If we write code
-in r, it will be like
+Check for second derivative to confirm it is a maximum (skipped). If we write code in r, it will be like
 
 ```{r}
 (lambdahat = sum(drug6mp$relapse) / sum(drug6mp$t2))
+```
+
+```{r}
+explikeli <- function(lambda) {
+  likeli = log(lambda)*sum(drug6mp$relapse) - lambda*sum(drug6mp$t2)
+  return(likeli)
+} #define the target function
+
+lambdahat = seq(0,1, length = 100000)
+explikelihat = explikeli(lambdahat)
+plot(0,0,xlim = c(0,0.3),ylim = c(-100,1),type = "n")
+lines(lambdahat,explikelihat)
 ```
 
 This is a easy question, we can tackle it with analytical solution. Let's try
@@ -106,32 +119,24 @@ and a cognitive parameter, $c_1$, which controls the effect of 'exploration'
 last position. This difference is adjusted by a random number between 0 and 1, $r_2$,
 and a social parameter, $c_2$, which controls the effect of 'exploitation'
 
-The following r code illustrate how PSO works:
+The following r code illustrate how PSO works (try some different number of 
+iterations):
 
-```{r, results='hide'}
-explikeli <- function(lambda) {
-  likeli = log(lambda)*sum(drug6mp$relapse) - lambda*sum(drug6mp$t2)
-  return(likeli)
-} #define the target function
-
-(PSO(explikeli, optimType = 'MAX', rangeVar = matrix(c(0,1),2,1), 
-    numVar = 1, maxIter = 1))
-
-
-
-
+```{r,results='hide'}
+iter = matrix(c(5,10,15,20,25,30,35,40,45,50), 1, 10)
+PSOresult = matrix(0,1,10)
+for (i in iter){
+  PSOresult[i/5] = PSO(explikeli, optimType = "MAX", numVar = 1, numPopulation = 20, 
+     maxIter = i, rangeVar = matrix(c(0,1),2,1), Vmax = 2, ci = 1.49445, 
+     cg = 1.49445, w = 0.729)
+}
 ```
 
 ```{r}
-lambdahat = seq(0,1, length = 100000)
-explikelihat = explikeli(lambdahat)
-plot(0,0,xlim = c(0,0.3),ylim = c(-100,1),type = "n")
-lines(lambdahat,explikelihat)
+print(PSOresult)
 ```
 
-
-
-
+As shown, the result from PSO converges as the iteration increase, and 
 
 # Likelihood function for left-truncated, right-cencored data
 
