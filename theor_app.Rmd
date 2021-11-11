@@ -26,8 +26,106 @@ We will use some examples to illustrate metaheuristic algorithms. We focus on th
 questions with analytical solution in order to discover the accuracy of metaheuristic
 algorithms. 
 
-# Introduction to metaheuristics algorithms
+# Introduction to some metaheuristics algorithms
 
+## PSO
+
+First, we will introduce PSO, particle swarm optimization. 
+The idea of PSO is that, when a particle (e.g. a bird) is in a group (e.g. a flock)
+of bird, the individual particle can profit from the information from all other 
+individuals. The mathematical model is:
+
+$$
+\begin{align*}
+X^i(t+1)&=X^i(t)+V^i(t+1)\\
+V^i(t+1)&=wV^i(t)+c_1r_1(pbest^i-X^i(t))+c_2r_2(gbest-X^i(t))
+\end{align*}
+$$
+
+The idea is that, we first generate P particles, there initial position is $X^i$.
+Also, we assign a initial velocity to each particle, $V^i$. In each iteration, we 
+update the velocity by the following criteria: 
+
+- The velocity of last time, adjusted by a inertial parameter, $w$.
+- The difference between particle i's personal best position, pbest 
+(best minimize/maximize target function by this particle so far), and it's last
+position. This difference is adjusted by a random number between 0 and 1, $r_1$,
+and a cognitive parameter, $c_1$, which controls the effect of 'exploration'
+- The difference between the global best position by all particle, gbest 
+(best minimize/maximize target function by all particle so far), and particle i's 
+last position. This difference is adjusted by a random number between 0 and 1, $r_2$,
+and a social parameter, $c_2$, which controls the effect of 'exploitation'
+
+## Cuckoo Search
+
+The second algorithm is called Cuckoo Search, an algorithm mimic the behavior of
+cuckoo bird. The idea is that, assume we have equal amount of nest (built by other 
+birds), cuckoo bird and eggs. Each time the Cuckoo bird will lay 1 egg (exactly 1)
+randomly in 1 nest. In nature, these eggs will face 2 scenario: abandoned or birth.
+A parameter, $p_a$ is used to control for rate of abandoned eggs. After elimination 
+process, the we keep the best egg (the values with best target value) and keep this
+process. 
+
+There are more metaheuristic algorithms. We'll use also use these algorithms with
+shorter introduction. 
+
+# Toy data
+
+Let's start testing metaheuristic algorithms and compare it with analytical solution. 
+We can first generate some data from known distributions which their likelihood.
+
+## Normal Distribution
+
+```{r}
+xnorm = matrix(rnorm(100, 20, 13), 100, 1)
+(mean(xnorm))
+(var(xnorm))
+```
+
+```{r, results='hide'}
+normallikeli = function(musigma2) {
+  likeli = -(nrow(xnorm)/2)*log(2*pi) - (nrow(xnorm)/2)*log(musigma2[2]) - 
+    (1/(2*musigma2[2]))*sum((xnorm - musigma2[1])^2)
+  return(likeli)
+} #normal distribution log likelihood
+
+PSO(normallikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
+     maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), Vmax = 1, ci = 1,
+     cg = 1, w = 0.7)
+
+SFL(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), numMemeplex = as.integer(100/3),
+frogLeapingIteration = as.integer(10))
+
+MFO(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,1000),2,2))
+
+HS(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
+rangeVar = matrix(c(0,1000),2,2), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
+```
+
+## Poisson Distribution
+
+```{r}
+xpoi = matrix(rpois(100, 7), 100, 1)
+(mean(xpoi))
+(var(xpoi))
+```
+
+```{r, results='hide'}
+poilikeli = function(lambda) {
+  likeli = sum(xpoi)*log(lambda) - nrow(xpoi)*lambda
+  return(likeli)
+} #normal distribution log likelihood
+
+PSO(poilikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+     maxIter = 1000, rangeVar = matrix(c(0,10),2,1), Vmax = 2, ci = 1.49445,
+     cg = 1.49445, w = 0.729)
+
+SFL(poilikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,10),2,1), numMemeplex = as.integer(100/3),
+frogLeapingIteration = as.integer(10))
+```
 
 # Likelihood function for right-cencored data
 
@@ -85,39 +183,10 @@ explikeli <- function(lambda) {
   likeli = log(lambda)*sum(drug6mp$relapse) - lambda*sum(drug6mp$t2)
   return(likeli)
 } #define the target function
-
-lambdahat = seq(0,1, length = 100000)
-explikelihat = explikeli(lambdahat)
-plot(0,0,xlim = c(0,0.3),ylim = c(-100,1),type = "n")
-lines(lambdahat,explikelihat)
 ```
 
 This is a easy question, we can tackle it with analytical solution. Let's try
-some metaheuristic algorithm. First, we will introduce PSO, particle swarm optimization. 
-The idea of PSO is that, when a particle (e.g. a bird) is in a group (e.g. a flock)
-of bird, the individual particle can profit from the information from all other 
-individuals. The mathematical model is:
-
-$$
-\begin{align*}
-X^i(t+1)&=X^i(t)+V^i(t+1)\\
-V^i(t+1)&=wV^i(t)+c_1r_1(pbest^i-X^i(t))+c_2r_2(gbest-X^i(t))
-\end{align*}
-$$
-
-The idea is that, we first generate P particles, there initial position is $X^i$.
-Also, we assign a initial velocity to each particle, $V^i$. In each iteration, we 
-update the velocity by the following criteria: 
-
-- The velocity of last time, adjusted by a inertial parameter, $w$.
-- The difference between particle i's personal best position, pbest 
-(best minimize/maximize target function by this particle so far), and it's last
-position. This difference is adjusted by a random number between 0 and 1, $r_1$,
-and a cognitive parameter, $c_1$, which controls the effect of 'exploration'
-- The difference between the global best position by all particle, gbest 
-(best minimize/maximize target function by all particle so far), and particle i's 
-last position. This difference is adjusted by a random number between 0 and 1, $r_2$,
-and a social parameter, $c_2$, which controls the effect of 'exploitation'
+some metaheuristic algorithm. 
 
 The following r code illustrate how PSO works (try some different number of 
 iterations):
@@ -148,3 +217,47 @@ $$
 L_c(S)&=\prod^{n}_{i}\frac{f(x_i^*)}{S(y_i^*)}
 \end{align*}
 $$
+
+Recall that in the KM book, exercise 3.6, we constructed a likelihood function for
+truncated data, ignore the information of truncation distribution:
+
+$$\begin{align*}
+L&=\prod_{i=1}^n\frac{f(x_i^*)^{\delta_i}S(x_i^*)^{1-\delta_i}}{S(y_i^*)}\\
+&=\prod_{i=1}^n\frac{(\alpha\theta x_i^{\alpha -1})^{\delta_i}(e^{-\theta x_i^\alpha})^{\delta_i}(e^{-\theta x_i^\alpha})^{1-\delta_i}}{e^{-\theta y_i ^\alpha}}\\
+&=\frac{(\alpha \theta)^4 89100^{\alpha -1}e^{-\theta (11^\alpha+12^\alpha+15^\alpha+33^\alpha+45^\alpha+28^\alpha)}}{e^{-\theta(5^\alpha+8^\alpha+12^\alpha+24^\alpha+32^\alpha+17^\alpha)}}
+\end{align*}$$
+
+This problem will be hard to give a analytical solution. Let's try metaheuristic 
+algorithms
+
+```{r}
+ltrclikeli = function(alphatheta){
+  exp1 = 11^alphatheta[1] + 12^alphatheta[1] + 15^alphatheta[1] + 33^alphatheta[1] 
+  + 45^alphatheta[1] + 28^alphatheta[1]
+  
+  exp2 = 5^alphatheta[1] + 8^alphatheta[1] + 12^alphatheta[1] + 24^alphatheta[1] 
+  + 32^alphatheta[1] + 17^alphatheta[1]
+  
+  likeli = ((alphatheta[1]*alphatheta[2])^4 * 89100^(alphatheta[1]-1) * exp(-alphatheta[2]*exp1))/(exp(-alphatheta[2]*exp2))
+  return(likeli)
+}
+
+# PSO(ltrclikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
+#      maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), Vmax = 2, ci = 1.49445,
+#      cg = 1.49445, w = 0.729)
+# 
+# PSO(ltrclikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
+#      maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), Vmax = 1, ci = 1,
+#      cg = 1, w = 0.7)
+
+# SFL(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+# maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), numMemeplex = as.integer(100/3),
+# frogLeapingIteration = as.integer(10))
+
+MFO(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,1000),2,2))
+
+# HS(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
+# rangeVar = matrix(c(0,1000),2,2), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)    many mistakes
+```
+
