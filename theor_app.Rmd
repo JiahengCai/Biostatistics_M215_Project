@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(KMsurv)
 library(metaheuristicOpt)
+library(survival)
 ```
 
 This file is designated to explore the performance of metaheuristic algorithms on
@@ -242,22 +243,79 @@ ltrclikeli = function(alphatheta){
   return(likeli)
 }
 
-# PSO(ltrclikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
-#      maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), Vmax = 2, ci = 1.49445,
-#      cg = 1.49445, w = 0.729)
-# 
-# PSO(ltrclikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
-#      maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), Vmax = 1, ci = 1,
-#      cg = 1, w = 0.7)
+# alphatheta = matrix(c(1,1),2,1)
+# ltrclikeli(alphatheta)
+matrix(c(0,1,0,100),2,2)
 
+
+# PSO(ltrclikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
+#      maxIter = 1000, rangeVar = matrix(c(0,1,0,10),2,2)
+# , Vmax = 2, ci = 1.49445,
+#      cg = 1.49445, w = 0.729)
+
+# 
 # SFL(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
-# maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), numMemeplex = as.integer(100/3),
-# frogLeapingIteration = as.integer(10))
+# maxIter = 1000, rangeVar = matrix(c(0,10),2,2)
+# , numMemeplex = as.integer(100/3),
+# frogLeapingIteration = as.integer(10)) problematic
 
 MFO(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
-maxIter = 1000, rangeVar = matrix(c(0,1000),2,2))
+maxIter = 1000, rangeVar = matrix(c(0,100,0,1),2,2)
+)
 
-# HS(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
-# rangeVar = matrix(c(0,1000),2,2), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)    many mistakes
+HS(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
+rangeVar = matrix(c(0,10),2,2)
+, PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
+```
+
+# Cox's Model
+
+```{r}
+data(hodg)
+fit <- coxph(Surv(time, delta) ~ score, data = hodg)
+summary(fit)
+```
+
+recall partial likelihood in our case:
+
+```{r}
+hodgt = hodg[order(hodg$time),]
+row.names(hodgt) = NULL
+matrix = matrix(0,nrow(hodg),4)
+
+coxlikeli = function(beta){
+  for (i in 1:43){
+      matrix[i,1] = exp(beta*hodgt$score[i])
+      
+  }
+  matrix[,2] = sum(matrix[,1]) - cumsum(matrix[,1]) + matrix[1,1]
+  matrix[,3] = hodgt$delta
+  matrix[,4] = (matrix[,1]/ matrix[,2])^matrix[,3]
+  prod = prod(matrix[,4])
+  return(prod)
+}
+
+
+
+
+# x = seq(-1,1, length = 1000)
+# y = seq(0, length = 1000)
+# for (i in 1:1000){
+#   y[i] = coxlikeli(x[i])
+# 
+# }
+# 
+# plot(0,0,xlim = c(-1,1),ylim = c(-0.1,0),type = "n")
+# lines(x,y)
+
+# PSO(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+#      maxIter = 1000, rangeVar = matrix(c(-1,1),2,1)
+# , Vmax = 2, ci = 1.49445,
+#      cg = 1.49445, w = 0.729)
+
+  coxlikeli(-0.02667477)
+  coxlikeli(-0.05283)
+
+
 ```
 
