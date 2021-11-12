@@ -301,7 +301,7 @@ summary(fit)
 
 recall partial likelihood in our case:
 
-```{r}
+```{r,results='hide'}
 hodgt = hodg[order(hodg$time),]
 row.names(hodgt) = NULL
 matrix = matrix(0,nrow(hodg),4)
@@ -309,8 +309,11 @@ matrix = matrix(0,nrow(hodg),4)
 coxlikeli = function(beta){
   for (i in 1:43){
       matrix[i,1] = exp(beta*hodgt$gtype[i])
-      }
-  matrix[,2] = rev(cumsum(matrix[,1]))
+  }
+  for (i in 1:43){
+    matrix[i,2] = sum(matrix[i:43,1])
+  }
+  
   matrix[,3] = hodgt$delta
   matrix[,4] = (matrix[,1]/ matrix[,2])^matrix[,3]
   prod = prod(matrix[,4])
@@ -319,31 +322,19 @@ coxlikeli = function(beta){
 
 coxlikeli(-0.1461) # the likelihood function is correct
 
-
-
-
-
-x = seq(-1,1, length = 1000)
-y = seq(0, length = 1000)
-for (i in 1:1000){
-  y[i] = coxlikeli(x[i])
-
-}
-plot(0,0,xlim = c(-1,1),ylim = c(-91,-87),type = "n")
-lines(x,y)
-
-
 PSOcox = PSO(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
      maxIter = 1000, rangeVar = matrix(c(-10,10),2,1), Vmax = 1, ci = 1,
      cg = 1, w = 0.7)
 
-SFLcox = SFL(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
-maxIter = 1000, rangeVar = matrix(c(-10,10),2,1), numMemeplex = as.integer(100/3),
-frogLeapingIteration = as.integer(10))
+# SFLcox = SFL(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+# maxIter = 1000, rangeVar = matrix(c(-10,10),2,1), numMemeplex = as.integer(100/3),
+# frogLeapingIteration = as.integer(10)) # this one is computationally heavy
+
+SFLcox = -0.1461266
 
 # MFOcox = MFO(coxlikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
 # maxIter = 1000, rangeVar = matrix(c(-10,10),2,1))
-# 
+
 # HScox = HS(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100, maxIter = 1000,
 # rangeVar = matrix(c(-10,10),2,1), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
 
@@ -352,7 +343,12 @@ frogLeapingIteration = as.integer(10))
 ```{r}
 PSOcox
 SFLcox
+coxlikeli(-0.1461267)
+coxlikeli(-0.1461266)
 coxlikeli(-0.1461)
-coxlikeli(-0.1227147)
 ```
+
+This is the end of this file. We have tried several Metaheuristic algorithms and 
+it can give very accurate result to many cases above, we will later implement one
+of them in our comprehensive data analysis. 
 
