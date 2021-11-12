@@ -90,19 +90,26 @@ normallikeli = function(musigma2) {
   return(likeli)
 } #normal distribution log likelihood
 
-PSO(normallikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
-     maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), Vmax = 1, ci = 1,
+PSOnorm = PSO(normallikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
+     maxIter = 1000, rangeVar = matrix(c(0,200),2,2), Vmax = 1, ci = 1,
      cg = 1, w = 0.7)
 
-SFL(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
-maxIter = 1000, rangeVar = matrix(c(0,1000),2,2), numMemeplex = as.integer(100/3),
+SFLnorm = SFL(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,200),2,2), numMemeplex = as.integer(100/3),
 frogLeapingIteration = as.integer(10))
 
-MFO(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
-maxIter = 1000, rangeVar = matrix(c(0,1000),2,2))
+MFOnorm = MFO(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,200),2,2))
 
-HS(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
-rangeVar = matrix(c(0,1000),2,2), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
+HSnorm = HS(normallikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
+rangeVar = matrix(c(0,200),2,2), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
+```
+
+```{r}
+PSOnorm
+SFLnorm
+MFOnorm
+HSnorm
 ```
 
 ## Poisson Distribution
@@ -117,15 +124,20 @@ xpoi = matrix(rpois(100, 7), 100, 1)
 poilikeli = function(lambda) {
   likeli = sum(xpoi)*log(lambda) - nrow(xpoi)*lambda
   return(likeli)
-} #normal distribution log likelihood
+} #poisson distribution log likelihood
 
-PSO(poilikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+PSOpoi = PSO(poilikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
      maxIter = 1000, rangeVar = matrix(c(0,10),2,1), Vmax = 2, ci = 1.49445,
      cg = 1.49445, w = 0.729)
 
-SFL(poilikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+SFLpoi = SFL(poilikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
 maxIter = 1000, rangeVar = matrix(c(0,10),2,1), numMemeplex = as.integer(100/3),
 frogLeapingIteration = as.integer(10))
+```
+
+```{r}
+PSOpoi
+SFLpoi
 ```
 
 # Likelihood function for right-cencored data
@@ -205,8 +217,24 @@ for (i in iter){
 ```{r}
 print(PSOresult)
 ```
+As shown, the result from PSO converges as the iteration increase.
 
-As shown, the result from PSO converges as the iteration increase, and 
+Some other algorithms:
+
+```{r, results='hide'}
+PSOrc = PSO(explikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+     maxIter = 1000, rangeVar = matrix(c(0,1),2,1), Vmax = 1, ci = 1,
+     cg = 1, w = 0.7)
+
+SFLrc = SFL(explikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(0,1),2,1), numMemeplex = as.integer(100/3),
+frogLeapingIteration = as.integer(10))
+```
+
+```{r}
+PSOrc
+SFLrc
+```
 
 # Likelihood function for left-truncated, right-cencored data
 
@@ -231,7 +259,7 @@ L&=\prod_{i=1}^n\frac{f(x_i^*)^{\delta_i}S(x_i^*)^{1-\delta_i}}{S(y_i^*)}\\
 This problem will be hard to give a analytical solution. Let's try metaheuristic 
 algorithms
 
-```{r}
+```{r,results='hide'}
 ltrclikeli = function(alphatheta){
   exp1 = 11^alphatheta[1] + 12^alphatheta[1] + 15^alphatheta[1] + 33^alphatheta[1] 
   + 45^alphatheta[1] + 28^alphatheta[1]
@@ -243,36 +271,31 @@ ltrclikeli = function(alphatheta){
   return(likeli)
 }
 
-# alphatheta = matrix(c(1,1),2,1)
-# ltrclikeli(alphatheta)
-matrix(c(0,1,0,100),2,2)
+# PSO(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100, 
+#     maxIter = 1000, rangeVar = matrix(c(0,100,0,1),2,2), Vmax = 2, ci = 1.5,
+#      cg = 2, w = 1)
 
-
-# PSO(ltrclikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
-#      maxIter = 1000, rangeVar = matrix(c(0,1,0,10),2,2)
-# , Vmax = 2, ci = 1.49445,
-#      cg = 1.49445, w = 0.729)
-
-# 
-# SFL(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
-# maxIter = 1000, rangeVar = matrix(c(0,10),2,2)
-# , numMemeplex = as.integer(100/3),
-# frogLeapingIteration = as.integer(10)) problematic
-
-MFO(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
+MFOltrc = MFO(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100,
 maxIter = 1000, rangeVar = matrix(c(0,100,0,1),2,2)
 )
 
-HS(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
-rangeVar = matrix(c(0,10),2,2)
+HSltrrc = HS(ltrclikeli, optimType = "MAX", numVar = 5, numPopulation = 100, maxIter = 1000,
+rangeVar = matrix(c(0,100,0,1),2,2)
 , PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
+```
+
+```{r}
+MFOltrc
+HSltrrc
 ```
 
 # Cox's Model
 
+Let's try fit a cox model with 1 variable for pilot study
+
 ```{r}
 data(hodg)
-fit <- coxph(Surv(time, delta) ~ score, data = hodg)
+fit <- coxph(Surv(time, delta) ~ gtype, data = hodg)
 summary(fit)
 ```
 
@@ -285,37 +308,51 @@ matrix = matrix(0,nrow(hodg),4)
 
 coxlikeli = function(beta){
   for (i in 1:43){
-      matrix[i,1] = exp(beta*hodgt$score[i])
-      
-  }
-  matrix[,2] = sum(matrix[,1]) - cumsum(matrix[,1]) + matrix[1,1]
+      matrix[i,1] = exp(beta*hodgt$gtype[i])
+      }
+  matrix[,2] = rev(cumsum(matrix[,1]))
   matrix[,3] = hodgt$delta
   matrix[,4] = (matrix[,1]/ matrix[,2])^matrix[,3]
   prod = prod(matrix[,4])
-  return(prod)
+  return(log(prod))
 }
 
+coxlikeli(-0.1461) # the likelihood function is correct
 
 
 
-# x = seq(-1,1, length = 1000)
-# y = seq(0, length = 1000)
-# for (i in 1:1000){
-#   y[i] = coxlikeli(x[i])
+
+
+x = seq(-1,1, length = 1000)
+y = seq(0, length = 1000)
+for (i in 1:1000){
+  y[i] = coxlikeli(x[i])
+
+}
+plot(0,0,xlim = c(-1,1),ylim = c(-91,-87),type = "n")
+lines(x,y)
+
+
+PSOcox = PSO(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+     maxIter = 1000, rangeVar = matrix(c(-10,10),2,1), Vmax = 1, ci = 1,
+     cg = 1, w = 0.7)
+
+SFLcox = SFL(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
+maxIter = 1000, rangeVar = matrix(c(-10,10),2,1), numMemeplex = as.integer(100/3),
+frogLeapingIteration = as.integer(10))
+
+# MFOcox = MFO(coxlikeli, optimType = "MAX", numVar = 2, numPopulation = 100,
+# maxIter = 1000, rangeVar = matrix(c(-10,10),2,1))
 # 
-# }
-# 
-# plot(0,0,xlim = c(-1,1),ylim = c(-0.1,0),type = "n")
-# lines(x,y)
+# HScox = HS(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100, maxIter = 1000,
+# rangeVar = matrix(c(-10,10),2,1), PAR = 0.3, HMCR = 0.95, bandwith = 0.05)
 
-# PSO(coxlikeli, optimType = "MAX", numVar = 1, numPopulation = 100,
-#      maxIter = 1000, rangeVar = matrix(c(-1,1),2,1)
-# , Vmax = 2, ci = 1.49445,
-#      cg = 1.49445, w = 0.729)
+```
 
-  coxlikeli(-0.02667477)
-  coxlikeli(-0.05283)
-
-
+```{r}
+PSOcox
+SFLcox
+coxlikeli(-0.1461)
+coxlikeli(-0.1227147)
 ```
 
