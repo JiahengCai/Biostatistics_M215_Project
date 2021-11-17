@@ -1,0 +1,120 @@
+---
+title: "EDA"
+author: "Jiaheng Cai"
+date: "11/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+System information
+```{r}
+library(tidyverse)
+library(readxl)
+library(gtsummary)
+library(survival)
+library(survminer)
+
+os <- sessionInfo()$running
+
+if (str_detect(os, "Ubuntu")) {
+  path <- '~/Biostatistics_M215_Project/data/'
+} 
+if(str_detect(os, "Windows")){
+  path <- "C:/Users/alexc/Desktop/215/Biostats-M215/"
+}
+```
+Data clean and recode
+```{r}
+endpoint = read_excel(paste0(path, 'endpoints.xls'))
+endpoint_colnames = c('ID', 'Intervention Group', 
+                      'Vitality Status as of 6/1/2006', 
+                      'Breast Cancer Status as of 6/1/2006 or last prior contact',
+                      'Other Cancer (invasive, not breast) Status as of 6/1/2006',
+                      'Breast Cancer Contribute to Death',
+                      'Year Breast Cancer Diagnosed', 'Cancer Grade',
+                      'Dummy Variable for Cancer Grade 2', 
+                      'Dummy Variable for Cancer Grade 3',
+                      'Dummy Variable for Unknown Cancer Grade',
+                      'Cancer Stage, AJCC 6th', 
+                      'Dummy Variable for Stage 2 AJCC 6th',
+                      'Dummy Variable for Stage 3 AJCC 6th',
+                      'WHEL Clinical Site', 'Recurrence Flag',
+                      'Years from Diagnosis to WHEL Study Entry',
+                      'Years from Study Entry to Recurrence/New Primary, or to Censor',
+                      'Years from Diagnosis to Recurrence/New Primary, or to Censor',
+                      'Years from Diagnosis to Death or Censor')
+
+colnames(endpoint) = endpoint_colnames
+
+endpoint$`Intervention Group` = ifelse(endpoint$`Intervention Group` == 3, 'Intervention', 'Comparison')
+
+endpoint$`Vitality Status as of 6/1/2006` = ifelse(endpoint$`Vitality Status as of 6/1/2006` == 0, 'Dead', ifelse(endpoint$`Vitality Status as of 6/1/2006` == 1, 'Alive', 'Unknown'))
+
+for (i in 1:nrow(endpoint)){
+if (endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 0){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'No Evidence of Recurrence'
+} else if(endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 1){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – New Primary Breast Cancer'
+}else if(endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 2){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – Local Recurrence'
+}else if(endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 3){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – Regional Recurrence'
+}else{
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – Distant Recurrence	'}
+}
+
+endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006` = ifelse(endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006` == 0, 'No evidence of Disease', ifelse(endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006` == 1, 'Reported Other Cancer (not confirmed)', 'Confirmed Other Cancer'))
+
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == -1] = 'Not Dead'
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == 0] = 'Dead from a cause other than Breast Cancer'
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == 1] = 'Dead from Breast Cancer'
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == 2] = 'Dead from Cancer, not confirmed breast but likely so'
+
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 0] = 'Grade Not Applicable or Not Available'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 1] = 'Grade I, Well Differentiated'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 2] = 'Grade II, Moderately Differentiated'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 3] = 'Grade III, Poorly Differentiated'
+
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 1] = 'Stage I'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 2] = 'Stage IIA'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 3] = 'Stage IIB'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 4] = 'Stage IIIA'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 5] = 'Stage IIIB'
+
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 1] = 'Site A in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 3] = 'Site B in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 5] = 'Site C in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 7] = 'Site in Arizona'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 9] = 'Site D in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 11] = 'Site in Texas'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 13] = 'Site in Oregon'
+
+endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 0] = 'No Invasive Breast Cancer Events'
+endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = 'Invasive Breast Cancer Event'
+```
+
+Summary table
+```{r}
+endpoint %>%
+  tbl_summary(by = 'Intervention Group',
+              include=-c(ID, `Year Breast Cancer Diagnosed`,
+                         `Dummy Variable for Cancer Grade 2`,
+                         `Dummy Variable for Cancer Grade 3`,
+                         `Dummy Variable for Unknown Cancer Grade`,
+                         `Dummy Variable for Stage 2 AJCC 6th`,
+                         `Dummy Variable for Stage 3 AJCC 6th`),
+              missing_text = "Missing") %>%
+  add_p()
+```
+
+Plots and survival analysis tools
+```{r}
+endpoint.data$recur_flag = as.factor(endpoint.data$recur_flag)
+
+endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
+endpoint.km.fit <- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.data, )
+print(endpoint.km.fit)
+```
