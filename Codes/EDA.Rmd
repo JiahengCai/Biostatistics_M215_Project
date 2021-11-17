@@ -21,8 +21,9 @@ os <- sessionInfo()$running
 
 if (str_detect(os, "Ubuntu")) {
   path <- '~/Biostatistics_M215_Project/data/'
-} 
-if(str_detect(os, "Windows")){
+} else if (str_detect(os, "mac")) {
+  path <- '~/Downloads/Biostat 215 Project/Biostatistics_M215_Project/Data/'
+} else if(str_detect(os, "Windows")){
   path <- "C:/Users/alexc/Desktop/215/Biostats-M215/"
 }
 ```
@@ -112,9 +113,17 @@ endpoint %>%
 
 Plots and survival analysis tools
 ```{r}
+endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
 endpoint.data$recur_flag = as.factor(endpoint.data$recur_flag)
 
 endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
 endpoint.km.fit <- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.data, )
 print(endpoint.km.fit)
 ```
+
+```{r}
+plot(endpoint.km.fit)
+```
+
+
+
