@@ -176,9 +176,9 @@ pre code {
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
 <pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-## ✓ tibble  3.1.5     ✓ dplyr   1.0.7
-## ✓ tidyr   1.1.4     ✓ stringr 1.4.0
-## ✓ readr   2.1.0     ✓ forcats 0.5.1</code></pre>
+## ✓ tibble  3.1.3     ✓ dplyr   1.0.7
+## ✓ tidyr   1.1.3     ✓ stringr 1.4.0
+## ✓ readr   2.0.0     ✓ forcats 0.5.1</code></pre>
 <pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
@@ -187,17 +187,13 @@ library(gtsummary)
 library(survival)
 library(survminer)</code></pre>
 <pre><code>## Loading required package: ggpubr</code></pre>
-<pre><code>## 
-## Attaching package: &#39;survminer&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:survival&#39;:
-## 
-##     myeloma</code></pre>
 <pre class="r"><code>os &lt;- sessionInfo()$running
 
 if (str_detect(os, &quot;Ubuntu&quot;)) {
   path &lt;- &#39;~/Biostatistics_M215_Project/data/&#39;
-} 
-if(str_detect(os, &quot;Windows&quot;)){
+} else if (str_detect(os, &quot;mac&quot;)) {
+  path &lt;- &#39;~/Downloads/Biostat 215 Project/Biostatistics_M215_Project/Data/&#39;
+} else if(str_detect(os, &quot;Windows&quot;)){
   path &lt;- &quot;C:/Users/alexc/Desktop/215/Biostats-M215/&quot;
 }</code></pre>
 <p>Data clean and recode</p>
@@ -278,12 +274,12 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
                          `Dummy Variable for Stage 3 AJCC 6th`),
               missing_text = &quot;Missing&quot;) %&gt;%
   add_p()</code></pre>
-<div id="vnztviwyla" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="erkwjhawvd" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#vnztviwyla .gt_table {
+#erkwjhawvd .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -308,7 +304,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-left-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_heading {
+#erkwjhawvd .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -320,7 +316,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-right-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_title {
+#erkwjhawvd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -330,7 +326,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-bottom-width: 0;
 }
 
-#vnztviwyla .gt_subtitle {
+#erkwjhawvd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -340,13 +336,13 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-top-width: 0;
 }
 
-#vnztviwyla .gt_bottom_border {
+#erkwjhawvd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_col_headings {
+#erkwjhawvd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -361,7 +357,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-right-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_col_heading {
+#erkwjhawvd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -381,7 +377,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   overflow-x: hidden;
 }
 
-#vnztviwyla .gt_column_spanner_outer {
+#erkwjhawvd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -393,15 +389,15 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   padding-right: 4px;
 }
 
-#vnztviwyla .gt_column_spanner_outer:first-child {
+#erkwjhawvd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#vnztviwyla .gt_column_spanner_outer:last-child {
+#erkwjhawvd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#vnztviwyla .gt_column_spanner {
+#erkwjhawvd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -413,7 +409,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   width: 100%;
 }
 
-#vnztviwyla .gt_group_heading {
+#erkwjhawvd .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -435,7 +431,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   vertical-align: middle;
 }
 
-#vnztviwyla .gt_empty_group_heading {
+#erkwjhawvd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -450,15 +446,15 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   vertical-align: middle;
 }
 
-#vnztviwyla .gt_from_md > :first-child {
+#erkwjhawvd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#vnztviwyla .gt_from_md > :last-child {
+#erkwjhawvd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#vnztviwyla .gt_row {
+#erkwjhawvd .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -477,7 +473,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   overflow-x: hidden;
 }
 
-#vnztviwyla .gt_stub {
+#erkwjhawvd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -489,7 +485,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   padding-left: 12px;
 }
 
-#vnztviwyla .gt_summary_row {
+#erkwjhawvd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -499,7 +495,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   padding-right: 5px;
 }
 
-#vnztviwyla .gt_first_summary_row {
+#erkwjhawvd .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -509,7 +505,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-top-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_grand_summary_row {
+#erkwjhawvd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -519,7 +515,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   padding-right: 5px;
 }
 
-#vnztviwyla .gt_first_grand_summary_row {
+#erkwjhawvd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -529,11 +525,11 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-top-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_striped {
+#erkwjhawvd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#vnztviwyla .gt_table_body {
+#erkwjhawvd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -542,7 +538,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-bottom-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_footnotes {
+#erkwjhawvd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -556,13 +552,13 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-right-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_footnote {
+#erkwjhawvd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#vnztviwyla .gt_sourcenotes {
+#erkwjhawvd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -576,41 +572,41 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
   border-right-color: #D3D3D3;
 }
 
-#vnztviwyla .gt_sourcenote {
+#erkwjhawvd .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#vnztviwyla .gt_left {
+#erkwjhawvd .gt_left {
   text-align: left;
 }
 
-#vnztviwyla .gt_center {
+#erkwjhawvd .gt_center {
   text-align: center;
 }
 
-#vnztviwyla .gt_right {
+#erkwjhawvd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#vnztviwyla .gt_font_normal {
+#erkwjhawvd .gt_font_normal {
   font-weight: normal;
 }
 
-#vnztviwyla .gt_font_bold {
+#erkwjhawvd .gt_font_bold {
   font-weight: bold;
 }
 
-#vnztviwyla .gt_font_italic {
+#erkwjhawvd .gt_font_italic {
   font-style: italic;
 }
 
-#vnztviwyla .gt_super {
+#erkwjhawvd .gt_super {
   font-size: 65%;
 }
 
-#vnztviwyla .gt_footnote_marks {
+#erkwjhawvd .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -839,12 +835,968 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = &#39;Invasive Brea
 </div>
 <p>Plots and survival analysis tools</p>
 <pre class="r"><code>endpoint.data = read_excel(paste0(path, &#39;endpoints.xls&#39;))
-endpoint.km.fit &lt;- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.data)
+year4.data = read_excel(paste0(path, &#39;healthstaty4.xls&#39;))
+
+endpoint.data$recur_flag = as.factor(endpoint.data$recur_flag)
+
+endpoint.data = read_excel(paste0(path, &#39;endpoints.xls&#39;))
+endpoint.km.fit &lt;- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.data, )
 print(endpoint.km.fit)</code></pre>
 <pre><code>## Call: survfit(formula = Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.data)
 ## 
-##         n events median 0.95LCL 0.95UCL
-## [1,] 3088    518     NA      NA      NA</code></pre>
+##       n  events  median 0.95LCL 0.95UCL 
+##    3088     518      NA      NA      NA</code></pre>
+<div id="intervention-effects-on-all-cause-mortality-by-baseline-demographic-and-clinical-characteristics" class="section level2">
+<h2>Intervention Effects on All-Cause Mortality by Baseline Demographic and Clinical Characteristics</h2>
+<p>Preprocessing</p>
+<pre class="r"><code>demo = read_excel(&quot;../Data/demographics.xls&quot;)
+phbase = read_excel(&quot;../Data/phbase.xls&quot;)
+nds = read_excel(&quot;../Data/ndsfoody4.xls&quot;)
+medical = read_excel(&quot;../Data/Medical.xls&quot;)
+
+# We need the following variables:
+
+## Survival time
+SurvTime = as.numeric(endpoint$`Years from Diagnosis to Death or Censor`)
+## Group and Status
+Group = as_factor(endpoint$`Intervention Group`)
+Group = relevel(Group, ref = &quot;Comparison&quot;)
+a = as_factor(endpoint$`Vitality Status as of 6/1/2006`)
+Status = ifelse(a == &quot;Alive&quot;, 0, 1)
+## Age at randomization, y
+AgeIdx = ifelse(demo$`age at rand` &lt; 55, &quot;&lt;55&quot;, &quot;&gt;=55&quot;) # Age indicator (&lt;=55 or not)
+## Cancer stage at diagnosis
+a = endpoint$`Cancer Stage, AJCC 6th`
+CancerStage = as_factor(a)
+## Hormone receptor status
+a = medical$`Estr Recep`
+b = medical$`Prog Recep`
+HormoneRecep = ifelse(a==1 &amp; b==1, &quot;ER+/PR+&quot;,
+                      ifelse(a==1 &amp; b==0, &quot;ER+/PR-&quot;,
+                             ifelse(a==0 &amp; b==1, &quot;ER-/PR+&quot;,
+                                    ifelse(a==0 &amp; b==0, &quot;ER-/PR-&quot;, NA))))
+## Time from Diag to Rand
+a = endpoint$`Years from Diagnosis to WHEL Study Entry`
+TimeDiagRand = as.numeric(ifelse(a &lt;=1, 0,
+                        ifelse(a &lt;=2, 1,
+                               ifelse(a &lt;=3, 2, 3
+                        )))) # Time from diagnosis to randomization
+## Tumor differentiation
+a = endpoint$`Cancer Grade`
+TumorDiff = as_factor(a)
+## No. of positive nodes (Number axillary lymph nodes positive)
+a = medical$`Node Pos`
+PosNodes = ifelse(a==0, 0, 
+                  ifelse(a &lt; 3, 1,
+                         ifelse(a &lt; 6, 2, 3)))
+## Tumor size
+a = medical$`Tumor Size` 
+TumorSize = ifelse(a &lt; 2, 0, 
+                   ifelse(a &lt; 3, 1,
+                          ifelse(a &lt; 4, 2,
+                                 ifelse(a &lt; 5, 3, 4))))
+## Physical activity 
+a = phbase$`NEW METS` 
+PhysicalAct = ifelse(a &lt;= 210, &quot;&lt;210&quot;, 
+                      ifelse(a &lt;= 615, &quot;211~615&quot;,
+                             ifelse(a &lt;= 1290, &quot;616~1290&quot;, &quot;&gt;1290&quot;))) 
+## Energy intake
+b = matrix(NA, nrow = length(a), ncol=1)
+colnames(b) = &quot;KCal&quot;
+b[endpoint$ID %in% nds$ID] = nds$Kcal
+KCal = as_factor(ifelse(b &lt;= 1430, &quot;&lt;1430&quot;,
+              ifelse(b &lt;= 1680, &quot;1430~1680&quot;,
+                     ifelse(b &lt;= 1980, &quot;1681~1980&quot;, 
+                            ifelse(b &gt; 1980, &quot;&gt;1980&quot;, NA)))))
+
+
+##### PUT THEM TOGETHER #####
+AllCauseMortalityData = data.frame(
+  SurvTime, Group, Status, AgeIdx, CancerStage, HormoneRecep, TimeDiagRand,
+        TumorDiff, PosNodes, TumorSize, PhysicalAct, KCal
+)
+#############################</code></pre>
+</div>
+<div id="universal-and-univariable-cox-regression" class="section level1">
+<h1>Universal and univariable Cox regression</h1>
+<pre class="r"><code>coxph(Surv(SurvTime, Status) ~ ., data=AllCauseMortalityData)</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ ., data = AllCauseMortalityData)
+## 
+##                                                  coef exp(coef) se(coef)      z
+## GroupIntervention                            -0.05926   0.94246  0.26733 -0.222
+## AgeIdx&gt;=55                                    1.21522   3.37104  0.29500  4.119
+## CancerStageStage I                            0.20215   1.22403  0.41601  0.486
+## CancerStageStage IIB                          0.01351   1.01360  0.52685  0.026
+## CancerStageStage IIIA                         0.04782   1.04898  0.81198  0.059
+## CancerStageStage IIIB                         0.56099   1.75240  1.11751  0.502
+## HormoneRecepER-/PR+                           0.15235   1.16457  0.77955  0.195
+## HormoneRecepER+/PR-                           0.03449   1.03509  0.53046  0.065
+## HormoneRecepER+/PR+                           0.43595   1.54643  0.38425  1.135
+## TimeDiagRand                                 -0.33445   0.71573  0.14283 -2.342
+## TumorDiffGrade II, Moderately Differentiated  0.53300   1.70403  0.54220  0.983
+## TumorDiffGrade I, Well Differentiated        -0.23305   0.79211  0.67657 -0.344
+## TumorDiffGrade III, Poorly Differentiated     0.74232   2.10080  0.56247  1.320
+## PosNodes                                      0.11410   1.12086  0.31859  0.358
+## TumorSize                                     0.18404   1.20207  0.15033  1.224
+## PhysicalAct&gt;1290                             -1.22969   0.29238  0.46214 -2.661
+## PhysicalAct211~615                           -0.16070   0.85154  0.32319 -0.497
+## PhysicalAct616~1290                          -0.62413   0.53573  0.36915 -1.691
+## KCal1430~1680                                -0.67682   0.50823  0.37286 -1.815
+## KCal&gt;1980                                     0.07635   1.07934  0.37498  0.204
+## KCal1681~1980                                -0.68036   0.50644  0.38508 -1.767
+##                                                    p
+## GroupIntervention                            0.82457
+## AgeIdx&gt;=55                                   3.8e-05
+## CancerStageStage I                           0.62703
+## CancerStageStage IIB                         0.97954
+## CancerStageStage IIIA                        0.95304
+## CancerStageStage IIIB                        0.61567
+## HormoneRecepER-/PR+                          0.84505
+## HormoneRecepER+/PR-                          0.94816
+## HormoneRecepER+/PR+                          0.25656
+## TimeDiagRand                                 0.01920
+## TumorDiffGrade II, Moderately Differentiated 0.32560
+## TumorDiffGrade I, Well Differentiated        0.73050
+## TumorDiffGrade III, Poorly Differentiated    0.18692
+## PosNodes                                     0.72024
+## TumorSize                                    0.22087
+## PhysicalAct&gt;1290                             0.00779
+## PhysicalAct211~615                           0.61902
+## PhysicalAct616~1290                          0.09089
+## KCal1430~1680                                0.06950
+## KCal&gt;1980                                    0.83867
+## KCal1681~1980                                0.07726
+## 
+## Likelihood ratio test=47.45  on 21 df, p=0.0008157
+## n= 2274, number of events= 57 
+##    (814 observations deleted due to missingness)</code></pre>
+<pre class="r"><code>library(survival)
+library(finalfit)
+dependent_os &lt;- &quot;Surv(SurvTime, Status)&quot;
+explanatory &lt;- c(&quot;AgeIdx&quot;, &quot;CancerStage&quot;, &quot;HormoneRecep&quot;, &quot;TimeDiagRand&quot;,
+        &quot;TumorDiff&quot;, &quot;PosNodes&quot;, &quot;TumorSize&quot;, &quot;PhysicalAct&quot;, &quot;KCal&quot;)
+AllCauseMortalityData %&gt;%
+  filter(Group==&quot;Intervention&quot;) %&gt;%
+  finalfit(dependent_os, explanatory)</code></pre>
+<pre><code>##  Dependent: Surv(SurvTime, Status)                                      
+##                             AgeIdx                                   &lt;55
+##                                                                     &gt;=55
+##                        CancerStage                             Stage IIA
+##                                                                  Stage I
+##                                                                Stage IIB
+##                                                               Stage IIIA
+##                                                               Stage IIIB
+##                       HormoneRecep                               ER-/PR-
+##                                                                  ER-/PR+
+##                                                                  ER+/PR-
+##                                                                  ER+/PR+
+##                       TimeDiagRand                                     0
+##                                                                        1
+##                                                                        2
+##                                                                        3
+##                          TumorDiff Grade Not Applicable or Not Available
+##                                      Grade II, Moderately Differentiated
+##                                             Grade I, Well Differentiated
+##                                         Grade III, Poorly Differentiated
+##                           PosNodes                             Mean (SD)
+##                          TumorSize                             Mean (SD)
+##                        PhysicalAct                                  &lt;210
+##                                                                    &gt;1290
+##                                                                  211~615
+##                                                                 616~1290
+##                               KCal                                 &lt;1430
+##                                                                1430~1680
+##                                                                    &gt;1980
+##                                                                1681~1980
+##                               &lt;NA&gt;                                  &lt;NA&gt;
+##          all          HR (univariable)         HR (multivariable)
+##  908 (100.0)                         -                          -
+##  629 (100.0) 1.16 (0.85-1.59, p=0.348)  2.99 (1.30-6.87, p=0.010)
+##  515 (100.0)                         -                          -
+##  584 (100.0) 0.69 (0.43-1.09, p=0.110)  2.14 (0.61-7.46, p=0.232)
+##  194 (100.0) 2.13 (1.34-3.39, p=0.001)  1.20 (0.26-5.45, p=0.813)
+##  188 (100.0) 2.51 (1.60-3.93, p&lt;0.001) 0.84 (0.06-11.14, p=0.898)
+##   56 (100.0) 3.58 (1.95-6.56, p&lt;0.001) 1.25 (0.04-37.58, p=0.899)
+##  299 (100.0)                         -                          -
+##   52 (100.0) 0.97 (0.46-2.05, p=0.930)  0.83 (0.10-7.27, p=0.868)
+##  198 (100.0) 0.81 (0.50-1.32, p=0.398)  0.80 (0.20-3.25, p=0.759)
+##  958 (100.0) 0.52 (0.36-0.75, p&lt;0.001)  1.07 (0.33-3.42, p=0.912)
+##  352 (100.0)                         -                          -
+##  488 (100.0)                         -                          -
+##  375 (100.0)                         -                          -
+##  322 (100.0)                         -                          -
+##  127 (100.0)                         -                          -
+##  620 (100.0) 1.49 (0.74-3.01, p=0.263) 3.09 (0.39-24.42, p=0.284)
+##  239 (100.0) 0.84 (0.36-1.96, p=0.680) 2.60 (0.28-24.05, p=0.400)
+##  551 (100.0) 2.26 (1.13-4.51, p=0.021) 3.20 (0.38-27.02, p=0.286)
+##    0.7 (1.0) 1.61 (1.41-1.85, p&lt;0.001)  1.04 (0.43-2.50, p=0.932)
+##    0.9 (1.2) 1.36 (1.22-1.51, p&lt;0.001)  1.64 (1.04-2.58, p=0.034)
+##  443 (100.0)                         -                          -
+##  351 (100.0) 0.61 (0.38-0.99, p=0.047)  0.20 (0.04-0.94, p=0.041)
+##  368 (100.0) 1.08 (0.72-1.61, p=0.717)  0.82 (0.31-2.17, p=0.694)
+##  375 (100.0) 0.84 (0.55-1.29, p=0.429)  0.73 (0.28-1.94, p=0.531)
+##  446 (100.0)                         -                          -
+##  287 (100.0) 0.64 (0.24-1.68, p=0.365)  0.51 (0.18-1.46, p=0.209)
+##  144 (100.0) 1.19 (0.45-3.13, p=0.725)  1.12 (0.41-3.07, p=0.818)
+##  249 (100.0) 0.37 (0.10-1.28, p=0.116)  0.34 (0.09-1.24, p=0.102)
+##         &lt;NA&gt; 0.70 (0.60-0.81, p&lt;0.001)  0.64 (0.43-0.94, p=0.022)</code></pre>
+</div>
+<div id="imputation" class="section level1">
+<h1>Imputation</h1>
+<pre class="r"><code>library(miceRanger)
+ImputedAll &lt;- AllCauseMortalityData %&gt;%
+  miceRanger(
+  m = 3, 
+  returnModels = TRUE,
+  verbose = TRUE
+)</code></pre>
+<pre><code>## One or more of the specified variables to impute contains no missing values. These will remain as a predictor, however they will not be imputed.</code></pre>
+<pre><code>## Converting characters to factors.</code></pre>
+<pre><code>## 
+## Process started at 2021-11-18 21:17:26</code></pre>
+<pre><code>## 
+## Attaching package: &#39;data.table&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     between, first, last</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     transpose</code></pre>
+<pre><code>## 
+## dataset 1 
+## iteration 1   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 2   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 3   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 4   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 5   | HormoneRecep | PosNodes | TumorSize | KCal
+## 
+## dataset 2 
+## iteration 1   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 2   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 3   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 4   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 5   | HormoneRecep | PosNodes | TumorSize | KCal
+## 
+## dataset 3 
+## iteration 1   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 2   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 3   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 4   | HormoneRecep | PosNodes | TumorSize | KCal
+## iteration 5   | HormoneRecep | PosNodes | TumorSize | KCal</code></pre>
+</div>
+<div id="cox-regression-for-each-variable" class="section level1">
+<h1>Cox Regression for each variable</h1>
+<pre class="r"><code>ImputedData = as.data.frame(completeData(ImputedAll)[[3]])
+for (item in explanatory) {
+  len = ImputedData %&gt;%
+    select(item) %&gt;%
+    unique(.) %&gt;%
+    nrow(.)
+  category = ImputedData %&gt;%
+      select(item) %&gt;%
+      unique(.)
+  hi = item
+  for (i in 1:len) {
+    cat = category[i,]
+    print(paste0(&quot;Explanatory: &quot;, hi))
+    print(paste0(&quot;Category: &quot;, cat))
+    idx = ImputedData[, hi] == cat
+    print(summary(coxph(Surv(SurvTime, Status) ~ Group, data=ImputedData[idx, ])))
+  }
+}</code></pre>
+<pre><code>## Note: Using an external vector in selections is ambiguous.
+## ℹ Use `all_of(item)` instead of `item` to silence this message.
+## ℹ See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
+## This message is displayed once per session.</code></pre>
+<pre><code>## [1] &quot;Explanatory: AgeIdx&quot;
+## [1] &quot;Category: &lt;55&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1825, number of events= 170 
+## 
+##                       coef exp(coef) se(coef)    z Pr(&gt;|z|)
+## GroupIntervention 0.003098  1.003103 0.153395 0.02    0.984
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.003     0.9969    0.7426     1.355
+## 
+## Concordance= 0.496  (se = 0.02 )
+## Likelihood ratio test= 0  on 1 df,   p=1
+## Wald test            = 0  on 1 df,   p=1
+## Score (logrank) test = 0  on 1 df,   p=1
+## 
+## [1] &quot;Explanatory: AgeIdx&quot;
+## [1] &quot;Category: &gt;=55&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1263, number of events= 146 
+## 
+##                       coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.04775   0.95338  0.16559 -0.288    0.773
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9534      1.049    0.6891     1.319
+## 
+## Concordance= 0.5  (se = 0.022 )
+## Likelihood ratio test= 0.08  on 1 df,   p=0.8
+## Wald test            = 0.08  on 1 df,   p=0.8
+## Score (logrank) test = 0.08  on 1 df,   p=0.8
+## 
+## [1] &quot;Explanatory: CancerStage&quot;
+## [1] &quot;Category: Stage IIA&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1026, number of events= 91 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.2017    0.8174   0.2107 -0.957    0.339
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.8174      1.223    0.5408     1.235
+## 
+## Concordance= 0.527  (se = 0.027 )
+## Likelihood ratio test= 0.92  on 1 df,   p=0.3
+## Wald test            = 0.92  on 1 df,   p=0.3
+## Score (logrank) test = 0.92  on 1 df,   p=0.3
+## 
+## [1] &quot;Explanatory: CancerStage&quot;
+## [1] &quot;Category: Stage I&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1191, number of events= 65 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.07616   1.07914  0.24811 0.307    0.759
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.079     0.9267    0.6636     1.755
+## 
+## Concordance= 0.516  (se = 0.033 )
+## Likelihood ratio test= 0.09  on 1 df,   p=0.8
+## Wald test            = 0.09  on 1 df,   p=0.8
+## Score (logrank) test = 0.09  on 1 df,   p=0.8
+## 
+## [1] &quot;Explanatory: CancerStage&quot;
+## [1] &quot;Category: Stage IIB&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 384, number of events= 52 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.4093    1.5058   0.2857 1.433    0.152
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.506     0.6641    0.8601     2.636
+## 
+## Concordance= 0.553  (se = 0.036 )
+## Likelihood ratio test= 2.1  on 1 df,   p=0.1
+## Wald test            = 2.05  on 1 df,   p=0.2
+## Score (logrank) test = 2.08  on 1 df,   p=0.1
+## 
+## [1] &quot;Explanatory: CancerStage&quot;
+## [1] &quot;Category: Stage IIIA&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 373, number of events= 70 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.03257   1.03311  0.23917 0.136    0.892
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.033      0.968    0.6465     1.651
+## 
+## Concordance= 0.505  (se = 0.031 )
+## Likelihood ratio test= 0.02  on 1 df,   p=0.9
+## Wald test            = 0.02  on 1 df,   p=0.9
+## Score (logrank) test = 0.02  on 1 df,   p=0.9
+## 
+## [1] &quot;Explanatory: CancerStage&quot;
+## [1] &quot;Category: Stage IIIB&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 114, number of events= 38 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)  
+## GroupIntervention -0.5660    0.5678   0.3371 -1.679   0.0932 .
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.5678      1.761    0.2933     1.099
+## 
+## Concordance= 0.567  (se = 0.041 )
+## Likelihood ratio test= 2.93  on 1 df,   p=0.09
+## Wald test            = 2.82  on 1 df,   p=0.09
+## Score (logrank) test = 2.89  on 1 df,   p=0.09
+## 
+## [1] &quot;Explanatory: HormoneRecep&quot;
+## [1] &quot;Category: ER+/PR+&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1949, number of events= 164 
+## 
+##                       coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.09078   0.91322  0.15629 -0.581    0.561
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9132      1.095    0.6723     1.241
+## 
+## Concordance= 0.51  (se = 0.02 )
+## Likelihood ratio test= 0.34  on 1 df,   p=0.6
+## Wald test            = 0.34  on 1 df,   p=0.6
+## Score (logrank) test = 0.34  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: HormoneRecep&quot;
+## [1] &quot;Category: ER-/PR+&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 132, number of events= 18 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.2430    1.2751   0.4753 0.511    0.609
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.275     0.7843    0.5023     3.237
+## 
+## Concordance= 0.539  (se = 0.062 )
+## Likelihood ratio test= 0.26  on 1 df,   p=0.6
+## Wald test            = 0.26  on 1 df,   p=0.6
+## Score (logrank) test = 0.26  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: HormoneRecep&quot;
+## [1] &quot;Category: ER-/PR-&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 633, number of events= 88 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.1093    1.1155   0.2132 0.513    0.608
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.116     0.8965    0.7345     1.694
+## 
+## Concordance= 0.514  (se = 0.027 )
+## Likelihood ratio test= 0.26  on 1 df,   p=0.6
+## Wald test            = 0.26  on 1 df,   p=0.6
+## Score (logrank) test = 0.26  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: HormoneRecep&quot;
+## [1] &quot;Category: ER+/PR-&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 374, number of events= 46 
+## 
+##                       coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention -0.04428   0.95668  0.29617 -0.15    0.881
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9567      1.045    0.5354     1.709
+## 
+## Concordance= 0.517  (se = 0.038 )
+## Likelihood ratio test= 0.02  on 1 df,   p=0.9
+## Wald test            = 0.02  on 1 df,   p=0.9
+## Score (logrank) test = 0.02  on 1 df,   p=0.9
+## 
+## [1] &quot;Explanatory: TimeDiagRand&quot;
+## [1] &quot;Category: 0&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 702, number of events= 93 
+## 
+##                       coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.03665   0.96401  0.20757 -0.177     0.86
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     0.964      1.037    0.6418     1.448
+## 
+## Concordance= 0.5  (se = 0.027 )
+## Likelihood ratio test= 0.03  on 1 df,   p=0.9
+## Wald test            = 0.03  on 1 df,   p=0.9
+## Score (logrank) test = 0.03  on 1 df,   p=0.9
+## 
+## [1] &quot;Explanatory: TimeDiagRand&quot;
+## [1] &quot;Category: 1&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 996, number of events= 109 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1040    0.9012   0.1920 -0.542    0.588
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9012       1.11    0.6186     1.313
+## 
+## Concordance= 0.505  (se = 0.025 )
+## Likelihood ratio test= 0.29  on 1 df,   p=0.6
+## Wald test            = 0.29  on 1 df,   p=0.6
+## Score (logrank) test = 0.29  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: TimeDiagRand&quot;
+## [1] &quot;Category: 3&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 643, number of events= 52 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1019    0.9031   0.2776 -0.367    0.714
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9031      1.107    0.5242     1.556
+## 
+## Concordance= 0.516  (se = 0.035 )
+## Likelihood ratio test= 0.13  on 1 df,   p=0.7
+## Wald test            = 0.13  on 1 df,   p=0.7
+## Score (logrank) test = 0.13  on 1 df,   p=0.7
+## 
+## [1] &quot;Explanatory: TimeDiagRand&quot;
+## [1] &quot;Category: 2&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 747, number of events= 62 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.2405    1.2719   0.2553 0.942    0.346
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.272     0.7862    0.7711     2.098
+## 
+## Concordance= 0.528  (se = 0.033 )
+## Likelihood ratio test= 0.89  on 1 df,   p=0.3
+## Wald test            = 0.89  on 1 df,   p=0.3
+## Score (logrank) test = 0.89  on 1 df,   p=0.3
+## 
+## [1] &quot;Explanatory: TumorDiff&quot;
+## [1] &quot;Category: Grade Not Applicable or Not Available&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 256, number of events= 24 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention -0.4682    0.6261   0.4219 -1.11    0.267
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.6261      1.597    0.2739     1.431
+## 
+## Concordance= 0.554  (se = 0.051 )
+## Likelihood ratio test= 1.27  on 1 df,   p=0.3
+## Wald test            = 1.23  on 1 df,   p=0.3
+## Score (logrank) test = 1.25  on 1 df,   p=0.3
+## 
+## [1] &quot;Explanatory: TumorDiff&quot;
+## [1] &quot;Category: Grade II, Moderately Differentiated&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1240, number of events= 123 
+## 
+##                       coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention -0.09382   0.91045  0.18049 -0.52    0.603
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9104      1.098    0.6392     1.297
+## 
+## Concordance= 0.509  (se = 0.024 )
+## Likelihood ratio test= 0.27  on 1 df,   p=0.6
+## Wald test            = 0.27  on 1 df,   p=0.6
+## Score (logrank) test = 0.27  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: TumorDiff&quot;
+## [1] &quot;Category: Grade I, Well Differentiated&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 484, number of events= 20 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.5902    1.8044   0.4691 1.258    0.208
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.804     0.5542    0.7196     4.525
+## 
+## Concordance= 0.538  (se = 0.06 )
+## Likelihood ratio test= 1.66  on 1 df,   p=0.2
+## Wald test            = 1.58  on 1 df,   p=0.2
+## Score (logrank) test = 1.63  on 1 df,   p=0.2
+## 
+## [1] &quot;Explanatory: TumorDiff&quot;
+## [1] &quot;Category: Grade III, Poorly Differentiated&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1108, number of events= 149 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.03348   1.03405  0.16386 0.204    0.838
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.034     0.9671      0.75     1.426
+## 
+## Concordance= 0.507  (se = 0.021 )
+## Likelihood ratio test= 0.04  on 1 df,   p=0.8
+## Wald test            = 0.04  on 1 df,   p=0.8
+## Score (logrank) test = 0.04  on 1 df,   p=0.8
+## 
+## [1] &quot;Explanatory: PosNodes&quot;
+## [1] &quot;Category: 1&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 732, number of events= 70 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.1953    1.2157   0.2401 0.814    0.416
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.216     0.8226    0.7594     1.946
+## 
+## Concordance= 0.523  (se = 0.031 )
+## Likelihood ratio test= 0.66  on 1 df,   p=0.4
+## Wald test            = 0.66  on 1 df,   p=0.4
+## Score (logrank) test = 0.66  on 1 df,   p=0.4
+## 
+## [1] &quot;Explanatory: PosNodes&quot;
+## [1] &quot;Category: 0&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1775, number of events= 125 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1203    0.8867   0.1794 -0.671    0.503
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.8867      1.128    0.6239      1.26
+## 
+## Concordance= 0.515  (se = 0.023 )
+## Likelihood ratio test= 0.45  on 1 df,   p=0.5
+## Wald test            = 0.45  on 1 df,   p=0.5
+## Score (logrank) test = 0.45  on 1 df,   p=0.5
+## 
+## [1] &quot;Explanatory: PosNodes&quot;
+## [1] &quot;Category: 2&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 333, number of events= 50 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.1548    1.1675   0.2838 0.546    0.585
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.167     0.8566    0.6694     2.036
+## 
+## Concordance= 0.521  (se = 0.036 )
+## Likelihood ratio test= 0.3  on 1 df,   p=0.6
+## Wald test            = 0.3  on 1 df,   p=0.6
+## Score (logrank) test = 0.3  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: PosNodes&quot;
+## [1] &quot;Category: 3&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 248, number of events= 71 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.3104    0.7331   0.2384 -1.302    0.193
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.7331      1.364    0.4595      1.17
+## 
+## Concordance= 0.536  (se = 0.031 )
+## Likelihood ratio test= 1.7  on 1 df,   p=0.2
+## Wald test            = 1.7  on 1 df,   p=0.2
+## Score (logrank) test = 1.71  on 1 df,   p=0.2
+## 
+## [1] &quot;Explanatory: TumorSize&quot;
+## [1] &quot;Category: 0&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1524, number of events= 94 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1548    0.8566   0.2070 -0.748    0.455
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.8566      1.167    0.5709     1.285
+## 
+## Concordance= 0.509  (se = 0.027 )
+## Likelihood ratio test= 0.56  on 1 df,   p=0.5
+## Wald test            = 0.56  on 1 df,   p=0.5
+## Score (logrank) test = 0.56  on 1 df,   p=0.5
+## 
+## [1] &quot;Explanatory: TumorSize&quot;
+## [1] &quot;Category: 1&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 863, number of events= 110 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.2621    1.2996   0.1915 1.368    0.171
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention       1.3     0.7695    0.8928     1.892
+## 
+## Concordance= 0.531  (se = 0.025 )
+## Likelihood ratio test= 1.88  on 1 df,   p=0.2
+## Wald test            = 1.87  on 1 df,   p=0.2
+## Score (logrank) test = 1.88  on 1 df,   p=0.2
+## 
+## [1] &quot;Explanatory: TumorSize&quot;
+## [1] &quot;Category: 2&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 335, number of events= 45 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)  
+## GroupIntervention -0.6270    0.5342   0.3075 -2.039   0.0415 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.5342      1.872    0.2924    0.9761
+## 
+## Concordance= 0.578  (se = 0.038 )
+## Likelihood ratio test= 4.31  on 1 df,   p=0.04
+## Wald test            = 4.16  on 1 df,   p=0.04
+## Score (logrank) test = 4.29  on 1 df,   p=0.04
+## 
+## [1] &quot;Explanatory: TumorSize&quot;
+## [1] &quot;Category: 3&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 151, number of events= 25 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1039    0.9013   0.4005 -0.259    0.795
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.9013       1.11    0.4111     1.976
+## 
+## Concordance= 0.532  (se = 0.051 )
+## Likelihood ratio test= 0.07  on 1 df,   p=0.8
+## Wald test            = 0.07  on 1 df,   p=0.8
+## Score (logrank) test = 0.07  on 1 df,   p=0.8
+## 
+## [1] &quot;Explanatory: TumorSize&quot;
+## [1] &quot;Category: 4&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 215, number of events= 42 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.1728    1.1886   0.3101 0.557    0.577
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.189     0.8413    0.6472     2.183
+## 
+## Concordance= 0.515  (se = 0.04 )
+## Likelihood ratio test= 0.31  on 1 df,   p=0.6
+## Wald test            = 0.31  on 1 df,   p=0.6
+## Score (logrank) test = 0.31  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: PhysicalAct&quot;
+## [1] &quot;Category: &lt;210&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 850, number of events= 103 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1491    0.8615   0.1972 -0.756     0.45
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.8615      1.161    0.5853     1.268
+## 
+## Concordance= 0.516  (se = 0.026 )
+## Likelihood ratio test= 0.57  on 1 df,   p=0.4
+## Wald test            = 0.57  on 1 df,   p=0.4
+## Score (logrank) test = 0.57  on 1 df,   p=0.4
+## 
+## [1] &quot;Explanatory: PhysicalAct&quot;
+## [1] &quot;Category: &gt;1290&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 738, number of events= 52 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.01448   1.01458  0.27767 0.052    0.958
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.015     0.9856    0.5888     1.748
+## 
+## Concordance= 0.512  (se = 0.036 )
+## Likelihood ratio test= 0  on 1 df,   p=1
+## Wald test            = 0  on 1 df,   p=1
+## Score (logrank) test = 0  on 1 df,   p=1
+## 
+## [1] &quot;Explanatory: PhysicalAct&quot;
+## [1] &quot;Category: 616~1290&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 749, number of events= 71 
+## 
+##                     coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.0336    1.0342   0.2374 0.141    0.887
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.034      0.967    0.6493     1.647
+## 
+## Concordance= 0.491  (se = 0.031 )
+## Likelihood ratio test= 0.02  on 1 df,   p=0.9
+## Wald test            = 0.02  on 1 df,   p=0.9
+## Score (logrank) test = 0.02  on 1 df,   p=0.9
+## 
+## [1] &quot;Explanatory: PhysicalAct&quot;
+## [1] &quot;Category: 211~615&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 751, number of events= 90 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.03249   1.03303  0.21086 0.154    0.878
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.033      0.968    0.6833     1.562
+## 
+## Concordance= 0.506  (se = 0.027 )
+## Likelihood ratio test= 0.02  on 1 df,   p=0.9
+## Wald test            = 0.02  on 1 df,   p=0.9
+## Score (logrank) test = 0.02  on 1 df,   p=0.9
+## 
+## [1] &quot;Explanatory: KCal&quot;
+## [1] &quot;Category: &lt;1430&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 1187, number of events= 127 
+## 
+##                     coef exp(coef) se(coef)   z Pr(&gt;|z|)
+## GroupIntervention 0.0889    1.0930   0.1777 0.5    0.617
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.093     0.9149    0.7716     1.548
+## 
+## Concordance= 0.512  (se = 0.023 )
+## Likelihood ratio test= 0.25  on 1 df,   p=0.6
+## Wald test            = 0.25  on 1 df,   p=0.6
+## Score (logrank) test = 0.25  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: KCal&quot;
+## [1] &quot;Category: &gt;1980&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 430, number of events= 51 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention -0.1352    0.8735   0.2817 -0.48    0.631
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.8735      1.145    0.5029     1.517
+## 
+## Concordance= 0.519  (se = 0.036 )
+## Likelihood ratio test= 0.23  on 1 df,   p=0.6
+## Wald test            = 0.23  on 1 df,   p=0.6
+## Score (logrank) test = 0.23  on 1 df,   p=0.6
+## 
+## [1] &quot;Explanatory: KCal&quot;
+## [1] &quot;Category: 1430~1680&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 775, number of events= 71 
+## 
+##                      coef exp(coef) se(coef)     z Pr(&gt;|z|)
+## GroupIntervention 0.04074   1.04158  0.23760 0.171    0.864
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention     1.042     0.9601    0.6538     1.659
+## 
+## Concordance= 0.502  (se = 0.031 )
+## Likelihood ratio test= 0.03  on 1 df,   p=0.9
+## Wald test            = 0.03  on 1 df,   p=0.9
+## Score (logrank) test = 0.03  on 1 df,   p=0.9
+## 
+## [1] &quot;Explanatory: KCal&quot;
+## [1] &quot;Category: 1681~1980&quot;
+## Call:
+## coxph(formula = Surv(SurvTime, Status) ~ Group, data = ImputedData[idx, 
+##     ])
+## 
+##   n= 696, number of events= 67 
+## 
+##                      coef exp(coef) se(coef)      z Pr(&gt;|z|)
+## GroupIntervention -0.1759    0.8387   0.2457 -0.716    0.474
+## 
+##                   exp(coef) exp(-coef) lower .95 upper .95
+## GroupIntervention    0.8387      1.192    0.5182     1.358
+## 
+## Concordance= 0.518  (se = 0.031 )
+## Likelihood ratio test= 0.51  on 1 df,   p=0.5
+## Wald test            = 0.51  on 1 df,   p=0.5
+## Score (logrank) test = 0.51  on 1 df,   p=0.5</code></pre>
+</div>
 
 
 
