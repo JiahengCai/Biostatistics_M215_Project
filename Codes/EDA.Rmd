@@ -2,12 +2,13 @@
 title: "EDA"
 author: "Jiaheng Cai"
 date: "11/16/2021"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 System information
 ```{r}
@@ -16,6 +17,12 @@ library(readxl)
 library(gtsummary)
 library(survival)
 library(survminer)
+library(sjPlot)
+library(gridExtra)
+library(lemon)
+library(knitr)
+
+
 
 os <- sessionInfo()$running
 
@@ -24,9 +31,16 @@ if (str_detect(os, "Ubuntu")) {
 } else if (str_detect(os, "mac")) {
   path <- '~/Downloads/Biostat 215 Project/Biostatistics_M215_Project/Data/'
 } else if(str_detect(os, "Windows")){
-  path <- "C:/Users/alexc/Desktop/215/Biostats-M215/"
+  path <- "C:/Users/alexc/Desktop/215/Biostatistics_M215_Project/data/"
 }
 ```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+                      echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+
 Data clean and recode
 ```{r}
 endpoint = read_excel(paste0(path, 'endpoints.xls'))
@@ -114,6 +128,8 @@ endpoint %>%
 Plots and survival analysis tools
 ```{r}
 endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
+year4.data = read_excel(paste0(path, 'healthstaty4.xls'))
+
 endpoint.data$recur_flag = as.factor(endpoint.data$recur_flag)
 
 endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
@@ -121,8 +137,133 @@ endpoint.km.fit <- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.dat
 print(endpoint.km.fit)
 ```
 
+## Intervention Effects on All-Cause Mortality by Baseline Demographic and Clinical Characteristics
+
+Preprocessing
 ```{r}
-plot(endpoint.km.fit)
+demo = read_excel("../Data/demographics.xls")
+phbase = read_excel("../Data/phbase.xls")
+nds = read_excel("../Data/ndsfoody4.xls")
+medical = read_excel("../Data/Medical.xls")
+
+# We need the following variables:
+
+## Survival time
+SurvTime = as.numeric(endpoint$`Years from Diagnosis to Death or Censor`)
+## Group and Status
+Group = as_factor(endpoint$`Intervention Group`)
+Group = relevel(Group, ref = "Comparison")
+a = as_factor(endpoint$`Vitality Status as of 6/1/2006`)
+Status = ifelse(a == "Alive", 0, 1)
+## Age at randomization, y
+AgeIdx = ifelse(demo$`age at rand` < 55, "<55", ">=55") # Age indicator (<=55 or not)
+## Cancer stage at diagnosis
+a = endpoint$`Cancer Stage, AJCC 6th`
+CancerStage = as_factor(a)
+## Hormone receptor status
+a = medical$`Estr Recep`
+b = medical$`Prog Recep`
+HormoneRecep = ifelse(a==1 & b==1, "ER+/PR+",
+                      ifelse(a==1 & b==0, "ER+/PR-",
+                             ifelse(a==0 & b==1, "ER-/PR+",
+                                    ifelse(a==0 & b==0, "ER-/PR-", NA))))
+## Time from Diag to Rand
+a = endpoint$`Years from Diagnosis to WHEL Study Entry`
+TimeDiagRand = as.numeric(ifelse(a <=1, 0,
+                        ifelse(a <=2, 1,
+                               ifelse(a <=3, 2, 3
+                        )))) # Time from diagnosis to randomization
+## Tumor differentiation
+a = endpoint$`Cancer Grade`
+TumorDiff = as_factor(a)
+## No. of positive nodes (Number axillary lymph nodes positive)
+a = medical$`Node Pos`
+PosNodes = ifelse(a==0, 0, 
+                  ifelse(a < 3, 1,
+                         ifelse(a < 6, 2, 3)))
+## Tumor size
+a = medical$`Tumor Size` 
+TumorSize = ifelse(a < 2, 0, 
+                   ifelse(a < 3, 1,
+                          ifelse(a < 4, 2,
+                                 ifelse(a < 5, 3, 4))))
+## Physical activity 
+a = phbase$`NEW METS` 
+PhysicalAct = ifelse(a <= 210, "<210", 
+                      ifelse(a <= 615, "211~615",
+                             ifelse(a <= 1290, "616~1290", ">1290"))) 
+## Energy intake
+b = matrix(NA, nrow = length(a), ncol=1)
+colnames(b) = "KCal"
+b[endpoint$ID %in% nds$ID] = nds$Kcal
+KCal = as_factor(ifelse(b <= 1430, "<1430",
+              ifelse(b <= 1680, "1430~1680",
+                     ifelse(b <= 1980, "1681~1980", 
+                            ifelse(b > 1980, ">1980", NA)))))
+
+
+##### PUT THEM TOGETHER #####
+AllCauseMortalityData = data.frame(
+  SurvTime, Group, Status, AgeIdx, CancerStage, HormoneRecep, TimeDiagRand,
+        TumorDiff, PosNodes, TumorSize, PhysicalAct, KCal
+)
+#############################
+```
+
+# Universal and univariable Cox regression
+```{r}
+coxph(Surv(SurvTime, Status) ~ ., data=AllCauseMortalityData) %>%
+  tbl_regression()
+```
+
+```{R}
+library(survival)
+library(finalfit)
+knit_print.data.frame <- lemon_print
+
+dependent_os <- "Surv(SurvTime, Status)"
+explanatory <- c("AgeIdx", "CancerStage", "HormoneRecep", "TimeDiagRand",
+        "TumorDiff", "PosNodes", "TumorSize", "PhysicalAct", "KCal")
+a = AllCauseMortalityData %>%
+  filter(Group=="Intervention") %>%
+  finalfit(dependent_os, explanatory)
+kable(a)
+```
+
+# Imputation
+```{R}
+library(miceRanger)
+ImputedAll <- AllCauseMortalityData %>%
+  miceRanger(
+  m = 3, 
+  returnModels = TRUE,
+  verbose = TRUE
+)
+```
+
+# Cox Regression for each variable
+```{r}
+ImputedData = as.data.frame(completeData(ImputedAll)[[3]])
+for (item in explanatory) {
+  len = ImputedData %>%
+    select(item) %>%
+    unique(.) %>%
+    nrow(.)
+  category = ImputedData %>%
+      select(item) %>%
+      unique(.)
+  hi = item
+  for (i in 1:len) {
+    cat = category[i,]
+    print(paste0("Explanatory: ", hi))
+    print(paste0("Category: ", cat))
+    idx = ImputedData[, hi] == cat
+ 
+     cat(knitr::knit_print(tbl_regression(coxph(Surv(SurvTime, Status) ~ Group, data=ImputedData[idx, ]))))
+  
+
+  }
+}
 ```
 
 
