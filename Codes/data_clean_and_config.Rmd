@@ -1,0 +1,99 @@
+---
+title: "Data Cleaning and Configuration"
+author: "Jiaheng Cai"
+date: "11/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+System information
+```{r}
+library(tidyverse)
+library(readxl)
+library(gtsummary)
+library(survival)
+library(survminer)
+
+os <- sessionInfo()$running
+
+if (str_detect(os, "Ubuntu")) {
+  path <- '~/Biostatistics_M215_Project/data/'
+} 
+if(str_detect(os, "Windows")){
+  path <- "C:/Users/alexc/Desktop/215/Biostats-M215/"
+}
+if(str_detect(os, "mac")){
+  path <- "~/Downloads/Biostat 215 Project/Biostatistics_M215_Project/Data/"
+}
+```
+
+### Data Cleaning and Configuration
+The idea is that, at the endpoint dataset, we have 3088 observations. However, in our
+covariate dataset, we only have 2333 observations. There is a 755 gap and it is hard
+to perform imputation since it is going to be computationally intensive and the result 
+will be inaccurate. Thus, we will perform a complete dataset study. We will keep the 
+subject which they finished the NDS food study. 
+
+```{r}
+endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
+ndsfoody4.data = read_excel(paste0(path, 'ndsfoody4.xls'))
+colnames(ndsfoody4.data)[1] = 'id'
+full.data = merge(endpoint.data, ndsfoody4.data, by.y='id', all.x=TRUE)
+full.data = na.omit(full.data) 
+```
+
+```{r}
+full.data$vitality = as.factor(full.data$vitality)
+full.data$recur_flag = as.factor(full.data$recur_flag)
+
+full.data %>%
+  tbl_summary(by = 'intgrp',
+              missing_text = "Missing",
+              include = -c(id, Year_Dx, grade2, grade3, grademiss, stage2, stage3,
+                           `last date`)) %>%
+  add_p()
+```
+As one can see, at the endpoint, there is no significant difference between the time
+to recurrence and time to death caused by breast cancer from these 2 groups. 
+
+```{r}
+full.data$endtimer = full.data$Year_Dx + full.data$yrsdx_endr
+# (endpoint.km.fit <- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = full.data))
+full.data = full.data[order(full.data$Year_Dx),]
+rownames(full.data) = NULL
+(cbind(full.data$Year_Dx, full.data$endtimer, full.data$recur_flag, full.data$vitality))
+```
+
+```{r}
+endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
+ndsfoody1.data = read_excel(paste0(path, 'ndsfoody1.xls'))
+ndsfoody4.data = read_excel(paste0(path, 'ndsfoody4.xls'))
+
+colnames(ndsfoody1.data)[1] = 'id'
+colnames(ndsfoody4.data)[1] = 'id'
+
+colnames.4 = colnames(ndsfoody4.data)
+for (i in 1:84){
+  colnames.4[i] = paste0(colnames.4[i], '4')
+}
+colnames(ndsfoody4.data) = colnames.4
+colnames(ndsfoody4.data)[1] = 'id'
+
+full.data = merge(endpoint.data, ndsfoody1.data, by.y='id', all.x=TRUE)
+full.data = merge(full.data, ndsfoody4.data, by.y='id', all.x=TRUE)
+full.data = na.omit(full.data) 
+
+full.data$vitality = as.factor(full.data$vitality)
+full.data$recur_flag = as.factor(full.data$recur_flag)
+
+full.data %>%
+  tbl_summary(by = 'intgrp',
+              missing_text = "Missing",
+              include = -c(id, Year_Dx, grade2, grade3, grademiss, stage2, stage3,
+                           `last date`)) %>%
+  add_p()
+```
+
