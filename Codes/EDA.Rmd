@@ -19,6 +19,7 @@ library(sjPlot)
 library(gridExtra)
 library(lemon)
 library(knitr)
+rm(list=ls())
 os <- sessionInfo()$running
 if (str_detect(os, "Ubuntu")) {
   path <- '~/Biostatistics_M215_Project/data/'
@@ -433,11 +434,59 @@ for (item in explanatory) {
 }
 ```
 
-## 6 Kaplan-Meier Estimate and Related Tests
+## 6 Variable Selection
+```{r}
+library(glmnet)
+library(ncvreg)
+```
+
+### Forward and Backward Selection
+```{R}
+fit.single <- coxph(Surv(SurvTime, Status) ~ Group, data = ImputedData)
+fit.forward <- MASS::stepAIC(fit.single, 
+                              scope=list(lower=~Group,
+                                         upper=~Group + AgeIdx + CancerStage +
+                                           HormoneRecep + TimeDiagRand + TumorDiff +
+                                           PosNodes + TumorSize + PhysicalAct + KCal),
+                              direction = "forward", trace = TRUE)
+summary(fit.forward)
+
+fit.all <- coxph(Surv(SurvTime, Status) ~ Group + AgeIdx + CancerStage + HormoneRecep + TimeDiagRand + TumorDiff + PosNodes + TumorSize + PhysicalAct + KCal, data = ImputedData)
+fit.backward <- MASS::stepAIC(fit.all, 
+                              scope=list(lower=~Group,
+                                         upper=~Group + AgeIdx + CancerStage +
+                                           HormoneRecep + TimeDiagRand + TumorDiff +
+                                           PosNodes + TumorSize + PhysicalAct + KCal),
+                              direction = "backward", trace = TRUE)
+summary(fit.backward)
+```
+
+### LASSO
+```{R}
+num_col = dim(ImputedData[,-c(1,3)])[2]
+fit.lasso   <- glmnet(ImputedData[,-c(1,3)], Surv(ImputedData$SurvTime, ImputedData$Status), alpha = 1, family = 'cox', penalty.factor=c(0, rep(1, num_col-1)), lambda=seq(0, 0.1, 0.01))
+  
+coef(fit.lasso)
+plot(fit.lasso)
+```
+
+### SCAD
+```{R}
+fit.scad = ncvsurv(ImputedData[,-c(1,3)], Surv(ImputedData$SurvTime, ImputedData$Status), penalty = 'SCAD')
+plot(fit.scad)
+```
+
+## 7 Competing Risk Models
+```{R}
+
+```
+
+## 8 Kaplan-Meier Estimate and Related Tests
 ```{R}
 mykable = function(x){
     knitr::kable(x, row.names = FALSE, align = c("l", "l", "r", "r", "r", "r", "r", "r", "r"))
 }
+
 ImputedData$YearSinceRand = endpoint$`Years from Diagnosis to Death or Censor` - endpoint$`Years from Diagnosis to WHEL Study Entry`
 
 dependent_os = "Surv(YearSinceRand, Status)"
@@ -458,12 +507,6 @@ ImputedData %>%
     mykable()
 ```
 
-## 7 Variable Selection
-```{r}
-
-```
-
-## 8 Competing Risk Models
 
 # (Table 3) Study Events
 ```{R}
@@ -475,3 +518,5 @@ table(a1, b1)
 b2 = endpoint$`Breast Cancer Contribute to Death`
 table(a1, b2)
 ```
+
+# Metaheuristics with Applications to Cox's Regression and Variable Selection
