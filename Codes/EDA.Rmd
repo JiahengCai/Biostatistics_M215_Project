@@ -433,6 +433,38 @@ for (item in explanatory) {
 }
 ```
 
+## 6 Kaplan-Meier Estimate and Related Tests
+```{R}
+mykable = function(x){
+    knitr::kable(x, row.names = FALSE, align = c("l", "l", "r", "r", "r", "r", "r", "r", "r"))
+}
+ImputedData$YearSinceRand = endpoint$`Years from Diagnosis to Death or Censor` - endpoint$`Years from Diagnosis to WHEL Study Entry`
+
+dependent_os = "Surv(YearSinceRand, Status)"
+explanatory = c("Group")
+ImputedData %>% 
+    surv_plot(dependent_os, explanatory, pval = TRUE)
+
+ImputedData %>% 
+    finalfit(dependent_os, explanatory) %>% 
+    mykable()
+
+explanatory = c("Group", "CancerStage")
+ImputedData %>% 
+    surv_plot(dependent_os, explanatory, pval = TRUE)
+
+ImputedData %>% 
+    finalfit(dependent_os, explanatory) %>% 
+    mykable()
+```
+
+## 7 Variable Selection
+```{r}
+
+```
+
+## 8 Competing Risk Models
+
 # (Table 3) Study Events
 ```{R}
 # Confirmed breast cancer event
