@@ -2,7 +2,11 @@
 title: "EDA"
 author: "Jiaheng Cai"
 date: "11/16/2021"
-output: html_document
+output: 
+  html_document:
+    highlight: pygments
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -97,7 +101,7 @@ endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 0] = 'No Invasive Breas
 endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = 'Invasive Breast Cancer Event'
 ```
 
-Summary table
+# Baseline Characteristics of WHEL Study Participants by Study Group
 ```{r}
 endpoint %>%
   tbl_summary(by = 'Intervention Group',
@@ -111,19 +115,412 @@ endpoint %>%
   add_p()
 ```
 
-Plots and survival analysis tools
-```{r}
-endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
-endpoint.data$recur_flag = as.factor(endpoint.data$recur_flag)
+# (Table 5) Intervention Effects on All-Cause Mortality by Baseline Demographic and Clinical Characteristics
 
-endpoint.data = read_excel(paste0(path, 'endpoints.xls'))
-endpoint.km.fit <- survfit(Surv(yrsdx_endr, recur_flag) ~ 1, data = endpoint.data, )
-print(endpoint.km.fit)
+## 1 Preprocessing
+```{r}
+demo = read_excel("../Data/demographics.xls")
+phbase = read_excel("../Data/phbase.xls")
+nds = read_excel("../Data/ndsfoody4.xls")
+medical = read_excel("../Data/Medical.xls")
+
+# We need the following variables:
+
+## Survival time
+SurvTime = as.numeric(endpoint$`Years from Diagnosis to Death or Censor`)
+## Group and Status
+Group = as_factor(endpoint$`Intervention Group`)
+Group = relevel(Group, ref = "Comparison")
+a = as_factor(endpoint$`Vitality Status as of 6/1/2006`)
+Status = ifelse(a == "Alive", 0, 1)
+## Age at randomization, y
+AgeIdx = ifelse(demo$`age at rand` < 55, "<55", ">=55") # Age indicator (<=55 or not)
+## Cancer stage at diagnosis
+a = endpoint$`Cancer Stage, AJCC 6th`
+CancerStage = as_factor(a)
+## Hormone receptor status
+a = medical$`Estr Recep`
+b = medical$`Prog Recep`
+HormoneRecep = ifelse(a==1 & b==1, "ER+/PR+",
+                      ifelse(a==1 & b==0, "ER+/PR-",
+                             ifelse(a==0 & b==1, "ER-/PR+",
+                                    ifelse(a==0 & b==0, "ER-/PR-", NA))))
+## Time from Diag to Rand
+a = endpoint$`Years from Diagnosis to WHEL Study Entry`
+#TimeDiagRand = as.numeric(ifelse(a <=1, 0,
+#                        ifelse(a <=2, 1,
+#                               ifelse(a <=3, 2, 3
+#                        )))) # Time from diagnosis to randomization
+TimeDiagRand = a
+## Tumor differentiation
+a = endpoint$`Cancer Grade`
+TumorDiff = as_factor(a)
+## No. of positive nodes (Number axillary lymph nodes positive)
+a = medical$`Node Pos`
+PosNodes = as_factor(ifelse(a==0, "0", 
+                  ifelse(a <= 3, "1~3",
+                         ifelse(a <= 6, "4~6", ">6"))))
+PosNodes = relevel(PosNodes, ref = "0")
+## Tumor size
+a = medical$`Tumor Size` 
+TumorSize = as_factor(ifelse(a < 2, "0~2", 
+                   ifelse(a < 3, "2~3",
+                          ifelse(a < 4, "3~4",
+                                 ifelse(a < 5, "4~5", ">5")))))
+TumorSize = relevel(TumorSize, ref="0~2")
+## Physical activity 
+a = phbase$`NEW METS` 
+PhysicalAct = ifelse(a <= 210, "<210", 
+                      ifelse(a <= 615, "211~615",
+                             ifelse(a <= 1290, "616~1290", ">1290"))) 
+## Energy intake
+b = matrix(NA, nrow = length(a), ncol=1)
+colnames(b) = "KCal"
+b[endpoint$ID %in% nds$ID] = nds$Kcal
+KCal = as_factor(ifelse(b <= 1430, "<1430",
+              ifelse(b <= 1680, "1430~1680",
+                     ifelse(b <= 1980, "1681~1980", 
+                            ifelse(b > 1980, ">1980", NA)))))
+KCal = relevel(KCal, ref="<1430")
+
+##### PUT THEM TOGETHER #####
+AllCauseMortalityData = data.frame(
+  SurvTime, Group, Status, AgeIdx, CancerStage, HormoneRecep, TimeDiagRand,
+        TumorDiff, PosNodes, TumorSize, PhysicalAct, KCal
+)
+library(DT)
+AllCauseMortalityData %>%
+  mutate(SurvTime = round(SurvTime, 3),
+         Status = ifelse(Status==0, "Alive", "Dead")) %>%
+  datatable(., extensions = 'Scroller', options = list(
+    deferRender = TRUE,
+    scrollY = 200,
+    scroller = TRUE
+))
+#############################
+```
+## 2 Imputation
+```{R}
+library(miceRanger)
+ImputedAll <- AllCauseMortalityData %>%
+  miceRanger(
+  m = 3, 
+  returnModels = TRUE,
+  verbose = TRUE
+)
+ImputedData = as.data.frame(completeData(ImputedAll)[[3]])
+```
+### Quality Check
+```{r}
+#plotModelError(ImputedAll, vars = 'allNumeric')
+#plotDistributions(ImputedAll, vars = 'allNumeric')
+plotVarImportance(ImputedAll)
 ```
 
+## 3 Universal and stratified Cox regression
+```{r echo=FALSE, results='asis'}
+    options(knitr.kable.NA = '')
+```
 ```{r}
-plot(endpoint.km.fit)
+#coxph(Surv(SurvTime, Status) ~ ., data=ImputedData)
+
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+
+# Standard table
+UniversalMod = coxph(Surv(SurvTime, Status) ~ ., data=ImputedData)
+tab_model(UniversalMod)
+
+# Model Diagnosis
+## Martingale Residual
+MartResid = residuals(UniversalMod, type="martingale")
+ggplot(data = ImputedData, mapping = aes(x = CancerStage, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot") +
+    theme_bw() + theme(legend.key = element_blank())
+ggplot(data = ImputedData, mapping = aes(x = KCal, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot") +
+    theme_bw() + theme(legend.key = element_blank())
+ggplot(data = ImputedData, mapping = aes(x = TimeDiagRand, y = MartResid)) +
+    geom_point() +
+    geom_smooth() +
+    labs(title = "Time from Diagnosis to Randomization") +
+    theme_bw() + theme(legend.key = element_blank())
+
+# Cox-Snell Residual
+Event = ImputedData$Status
+CSResid = -(MartResid - Event)
+fit_coxsnell <- coxph(formula = Surv(CSResid, Event) ~ 1,
+                      ties    = c("efron","breslow","exact")[1])
+
+## Nelson-Aalen estimator for baseline hazard (all covariates zero)
+df_base_haz <- basehaz(fit_coxsnell, centered = FALSE)
+## Plot
+ggplot(data = df_base_haz, mapping = aes(x = time, y = hazard)) +
+    geom_point() +
+    labs(x = "Cox-Snell residuals as pseudo observed times",
+         y = "Estimated cumulative hazard at pseudo observed times") +
+    theme_bw() + theme(legend.key = element_blank()) +
+    geom_abline(intercept = 0, color="blue", cex=1, alpha=0.5)
 ```
 
+We have already fitted a universal model, now we are going to fit models for both groups.
 
+```{R}
+library(survival)
+library(finalfit)
+dependent_os <- "Surv(SurvTime, Status)"
+explanatory <- c("AgeIdx", "CancerStage", "HormoneRecep", "TimeDiagRand",
+        "TumorDiff", "PosNodes", "TumorSize", "PhysicalAct", "KCal")
+ImputedData %>%
+  summary_factorlist(dependent_os, 
+  explanatory, fit_id=TRUE) -> TabStart
+TabStart
+# Cox model for the intervention group
+ImputedData %>%
+  filter(Group=="Intervention") %>%
+  finalfit(dependent_os, explanatory) -> TabIntervention
+knitr::kable(TabIntervention, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r"))
+# Cox model for the comparison group
+ImputedData %>%
+  filter(Group=="Comparison") %>%
+  finalfit(dependent_os, explanatory) -> TabComparison
+knitr::kable(TabIntervention, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r"))
+```
 
+### 4 Model Diagnosis
+#### (a) Intervention group
+```{R}
+# Intervention
+IdxInt = ImputedData$Group=="Intervention"
+IntMod = coxph(Surv(SurvTime, Status) ~ ., data=ImputedData[IdxInt,])
+
+# Martingale Residual
+MartResid = residuals(IntMod, type="martingale")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = CancerStage, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot for Cancer Stage") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = TimeDiagRand, y = MartResid)) +
+    geom_point() +
+    geom_smooth() +
+    labs(title = "Time from Diagnosis to Randomization") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = TumorDiff, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "Tumor Differentiation") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=60,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = KCal, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "KCal") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=0,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = factor(TumorSize), y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Tumor Size") +
+    theme_bw() + theme(legend.key = element_blank()) + 
+    ylab("Martingale Residual") + xlab("Tumor Size")
+
+# Schoenfeld Individual Test
+test.ph = cox.zph(IntMod)
+ggcoxzph(test.ph)
+```
+
+```{R}
+# Cox-Snell Residual
+Event = ImputedData$Status[IdxInt]
+CSResid = -(MartResid - Event)
+fit_coxsnell <- coxph(formula = Surv(CSResid, Event) ~ 1,
+                      ties    = c("efron","breslow","exact")[1])
+
+## Nelson-Aalen estimator for baseline hazard (all covariates zero)
+df_base_haz <- basehaz(fit_coxsnell, centered = FALSE)
+## Plot
+ggplot(data = df_base_haz, mapping = aes(x = time, y = hazard)) +
+    geom_point() +
+    labs(x = "Cox-Snell residuals as pseudo observed times",
+         y = "Estimated cumulative hazard at pseudo observed times") +
+    theme_bw() + theme(legend.key = element_blank()) +
+    geom_abline(intercept = 0, color="blue", cex=1, alpha=0.5)
+```
+#### (b) Comparison group
+```{r}
+# Comparison
+IdxCom = ImputedData$Group=="Comparison"
+ComMod = coxph(Surv(SurvTime, Status) ~ ., data=ImputedData[IdxCom,],  method = 'breslow')
+
+# Martingale Residual
+MartResid = residuals(ComMod, type="martingale")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = CancerStage, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot for Cancer Stage") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = TimeDiagRand, y = MartResid)) +
+    geom_point() +
+    geom_smooth() +
+    labs(title = "Time from Diagnosis to Randomization") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = TumorDiff, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "Tumor Differentiation") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=60,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = KCal, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "KCal") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=0,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = factor(TumorSize), y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Tumor Size") +
+    theme_bw() + theme(legend.key = element_blank()) + 
+    ylab("Martingale Residual") + xlab("Tumor Size")
+
+# Schoenfeld Individual Test
+test.ph = cox.zph(ComMod)
+ggcoxzph(test.ph)
+```
+
+```{R}
+# Cox-Snell Residual
+Event = ImputedData$Status[IdxCom]
+CSResid = -(MartResid - Event)
+fit_coxsnell <- coxph(formula = Surv(CSResid, Event) ~ 1,
+                      ties    = c("efron","breslow","exact")[1])
+
+## Nelson-Aalen estimator for baseline hazard (all covariates zero)
+df_base_haz <- basehaz(fit_coxsnell, centered = FALSE)
+## Plot
+ggplot(data = df_base_haz, mapping = aes(x = time, y = hazard)) +
+    geom_point() +
+    labs(x = "Cox-Snell residuals as pseudo observed times",
+         y = "Estimated cumulative hazard at pseudo observed times") +
+    theme_bw() + theme(legend.key = element_blank()) +
+    geom_abline(intercept = 0, color="blue", cex=1, alpha=0.5) +
+  labs(title = "Quality of overall fit: Cox-Snell")
+```
+
+## 5 Cox Regression for each variable
+```{r}
+explanatory = c("AgeIdx", "CancerStage", "HormoneRecep", 
+        "TumorDiff", "PosNodes", "TumorSize", "PhysicalAct", "KCal")
+for (item in explanatory) {
+  len = ImputedData %>%
+    select(item) %>%
+    unique(.) %>%
+    nrow(.)
+  category = ImputedData %>%
+      select(item) %>%
+      unique(.)
+  hi = item
+  for (i in 1:len) {
+    cat = category[i,]
+    print(paste0("Explanatory: ", hi))
+    print(paste0("Category: ", cat))
+    idx = ImputedData[, hi] == cat
+    print(summary(coxph(Surv(SurvTime, Status) ~ Group, data=ImputedData[idx, ])))
+  }
+}
+```
+## 6 Anderson's plot for checking the PH assumption
+```{R}
+AndersonPlot <- function(mod.group, Adjust="") {
+ t = ImputedData$SurvTime
+reptime <- function(l, t){
+  x <- numeric(max(t))
+  for(i in min(t):max(t)){
+    diff <- i - t
+    diff <- diff[diff >= 0]
+    x[i] <- l[which.min(diff)]
+  }
+  return(x)
+}
+H1 <- mod.group$hazard[mod.group$strata == "Comparison"]
+H2 <- mod.group$hazard[mod.group$strata == "Intervention"]
+t1 <- mod.group$time[mod.group$strata == "Comparison"]
+t2 <- mod.group$time[mod.group$strata == "Intervention"]
+
+H1 <- reptime(H1, t1)
+H2 <- reptime(H2, t2)
+
+ggplot() + 
+  geom_step(aes(x=H1[1:15], y=H2[1:15])) +
+  xlab("Breslow's est of Comparison Group") +
+  ylab("Breslow's est of Intervention Group") +
+  ggtitle(paste("Anderson's Plot\n ", Adjust) )
+}
+```
+```{R}
+# Adjusting for Cancer stage
+mod.group = basehaz(coxph(Surv(SurvTime, Status) ~ strata(factor(Group))+CancerStage, data=ImputedData))
+AndersonPlot(mod.group)
+
+# Adjusting for Time from diag to rand
+mod.group = basehaz(coxph(Surv(SurvTime, Status) ~ strata(factor(Group))+TimeDiagRand, data=ImputedData))
+AndersonPlot(mod.group, "Time from Diag to Rand")
+
+# Adjusting for Age (<55 or not)
+mod.group = basehaz(coxph(Surv(SurvTime, Status) ~ strata(Group)+AgeIdx, data=ImputedData))
+AndersonPlot(mod.group, "Age at Diagnosis")
+
+# Adjusting for Hormone Receptor Status
+mod.group = basehaz(coxph(Surv(SurvTime, Status) ~ strata(Group)+HormoneRecep, data=ImputedData))
+AndersonPlot(mod.group, "Hormone Receptor Status")
+
+# Adjusting for others
+mod.group = basehaz(coxph(Surv(SurvTime, Status) ~ strata(factor(Group))+., data=ImputedData))
+AndersonPlot(mod.group, "All covariates")
+```
+
+## 7 Competing Risk Model
+```{R}
+
+```
+
+## 8 Kaplan-Meier Estimate and Related Tests
+```{R}
+mykable = function(x){
+    knitr::kable(x, row.names = FALSE, align = c("l", "l", "r", "r", "r", "r", "r", "r", "r"))
+}
+ImputedData$YearSinceRand = endpoint$`Years from Diagnosis to Death or Censor` - endpoint$`Years from Diagnosis to WHEL Study Entry`
+
+dependent_os = "Surv(YearSinceRand, Status)"
+explanatory = c("Group")
+ImputedData %>% 
+    surv_plot(dependent_os, explanatory, pval = TRUE)
+ImputedData %>% 
+    finalfit(dependent_os, explanatory) %>% 
+    mykable()
+
+explanatory = c("Group", "CancerStage")
+ImputedData %>% 
+    surv_plot(dependent_os, explanatory, pval = TRUE)
+ImputedData %>% 
+    finalfit(dependent_os, explanatory) %>% 
+    mykable()
+```
+
+# (Table 3) Study Events
+```{R}
+# Confirmed breast cancer event
+a1 = endpoint$`Intervention Group`
+b1 = endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`
+table(a1, b1)
+
+# Confirmed deaths
+b2 = endpoint$`Breast Cancer Contribute to Death`
+table(a1, b2)
+```
