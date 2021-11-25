@@ -1,0 +1,550 @@
+---
+title: "EDA"
+author: "Jiaheng Cai"
+date: "11/16/2021"
+output: 
+  html_document:
+    highlight: pygments
+    toc: yes
+    toc_float: yes
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(gtsummary)
+library(survival)
+library(survminer)
+library(sjPlot)
+library(gridExtra)
+library(lemon)
+library(knitr)
+rm(list=ls())
+os <- sessionInfo()$running
+if (str_detect(os, "Ubuntu")) {
+  path <- '~/Biostatistics_M215_Project/data/'
+} else if (str_detect(os, "mac")) {
+  path <- '~/Downloads/Biostat 215 Project/Biostatistics_M215_Project/Data/'
+} else if(str_detect(os, "Windows")){
+  path <- "C:/Users/alexc/Desktop/215/Biostatistics_M215_Project/data/"
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+                      echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+
+# Data clean and recode
+```{r}
+endpoint = read_excel(paste0(path, 'endpoints.xls'))
+endpoint_colnames = c('ID', 'Intervention Group', 
+                      'Vitality Status as of 6/1/2006', 
+                      'Breast Cancer Status as of 6/1/2006 or last prior contact',
+                      'Other Cancer (invasive, not breast) Status as of 6/1/2006',
+                      'Breast Cancer Contribute to Death',
+                      'Year Breast Cancer Diagnosed', 'Cancer Grade',
+                      'Dummy Variable for Cancer Grade 2', 
+                      'Dummy Variable for Cancer Grade 3',
+                      'Dummy Variable for Unknown Cancer Grade',
+                      'Cancer Stage, AJCC 6th', 
+                      'Dummy Variable for Stage 2 AJCC 6th',
+                      'Dummy Variable for Stage 3 AJCC 6th',
+                      'WHEL Clinical Site', 'Recurrence Flag',
+                      'Years from Diagnosis to WHEL Study Entry',
+                      'Years from Study Entry to Recurrence/New Primary, or to Censor',
+                      'Years from Diagnosis to Recurrence/New Primary, or to Censor',
+                      'Years from Diagnosis to Death or Censor')
+colnames(endpoint) = endpoint_colnames
+endpoint$`Intervention Group` = ifelse(endpoint$`Intervention Group` == 3, 'Intervention', 'Comparison')
+endpoint$`Vitality Status as of 6/1/2006` = ifelse(endpoint$`Vitality Status as of 6/1/2006` == 0, 'Dead', ifelse(endpoint$`Vitality Status as of 6/1/2006` == 1, 'Alive', 'Unknown'))
+for (i in 1:nrow(endpoint)){
+if (endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 0){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'No Evidence of Recurrence'
+} else if(endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 1){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – New Primary Breast Cancer'
+}else if(endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 2){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – Local Recurrence'
+}else if(endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] == 3){
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – Regional Recurrence'
+}else{
+  endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`[i] = 'Confirmed – Distant Recurrence	'}
+}
+endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006` = ifelse(endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006` == 0, 'No evidence of Disease', ifelse(endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006` == 1, 'Reported Other Cancer (not confirmed)', 'Confirmed Other Cancer'))
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == -1] = 'Not Dead'
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == 0] = 'Dead from a cause other than Breast Cancer'
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == 1] = 'Dead from Breast Cancer'
+endpoint$`Breast Cancer Contribute to Death`[endpoint$`Breast Cancer Contribute to Death` == 2] = 'Dead from Cancer, not confirmed breast but likely so'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 0] = 'Grade Not Applicable or Not Available'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 1] = 'Grade I, Well Differentiated'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 2] = 'Grade II, Moderately Differentiated'
+endpoint$`Cancer Grade`[endpoint$`Cancer Grade` == 3] = 'Grade III, Poorly Differentiated'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 1] = 'Stage I'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 2] = 'Stage IIA'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 3] = 'Stage IIB'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 4] = 'Stage IIIA'
+endpoint$`Cancer Stage, AJCC 6th`[endpoint$`Cancer Stage, AJCC 6th` == 5] = 'Stage IIIB'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 1] = 'Site A in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 3] = 'Site B in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 5] = 'Site C in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 7] = 'Site in Arizona'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 9] = 'Site D in California'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 11] = 'Site in Texas'
+endpoint$`WHEL Clinical Site`[endpoint$`WHEL Clinical Site` == 13] = 'Site in Oregon'
+endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 0] = 'No Invasive Breast Cancer Events'
+endpoint$`Recurrence Flag`[endpoint$`Recurrence Flag` == 1] = 'Invasive Breast Cancer Event'
+```
+
+# Baseline Characteristics of WHEL Study Participants by Study Group
+
+```{R}
+endpoint %>%
+  tbl_summary(by = 'Intervention Group',
+              include=-c(ID, `Year Breast Cancer Diagnosed`,
+                         `Dummy Variable for Cancer Grade 2`,
+                         `Dummy Variable for Cancer Grade 3`,
+                         `Dummy Variable for Unknown Cancer Grade`,
+                         `Dummy Variable for Stage 2 AJCC 6th`,
+                         `Dummy Variable for Stage 3 AJCC 6th`),
+              missing_text = "Missing") %>%
+  add_p()
+```
+
+# (Table 5) Intervention Effects on All-Cause Mortality by Baseline Demographic and Clinical Characteristics
+
+## 1 Preprocessing
+```{R}
+demo = read_excel("../Data/demographics.xls")
+phbase = read_excel("../Data/phbase.xls")
+nds = read_excel("../Data/ndsfoody4.xls")
+medical = read_excel("../Data/Medical.xls")
+
+# We need the following variables:
+
+## Survival time
+SurvTime = as.numeric(endpoint$`Years from Diagnosis to Death or Censor`)
+## Group and Status
+Group = as_factor(endpoint$`Intervention Group`)
+Group = relevel(Group, ref = "Comparison")
+a = as_factor(endpoint$`Vitality Status as of 6/1/2006`)
+Status = ifelse(a == "Alive", 0, 1)
+## Age at randomization, y
+AgeIdx = ifelse(demo$`age at rand` < 55, "<55", ">=55") # Age indicator (<=55 or not)
+## Cancer stage at diagnosis
+a = endpoint$`Cancer Stage, AJCC 6th`
+CancerStage = as_factor(a)
+## Hormone receptor status
+a = medical$`Estr Recep`
+b = medical$`Prog Recep`
+HormoneRecep = ifelse(a==1 & b==1, "ER+/PR+",
+                      ifelse(a==1 & b==0, "ER+/PR-",
+                             ifelse(a==0 & b==1, "ER-/PR+",
+                                    ifelse(a==0 & b==0, "ER-/PR-", NA))))
+## Time from Diag to Rand
+a = endpoint$`Years from Diagnosis to WHEL Study Entry`
+#TimeDiagRand = as.numeric(ifelse(a <=1, 0,
+#                        ifelse(a <=2, 1,
+#                               ifelse(a <=3, 2, 3
+#                        )))) # Time from diagnosis to randomization
+TimeDiagRand = a
+## Tumor differentiation
+a = endpoint$`Cancer Grade`
+TumorDiff = as_factor(a)
+## No. of positive nodes (Number axillary lymph nodes positive)
+a = medical$`Node Pos`
+PosNodes = as_factor(ifelse(a==0, "0", 
+                  ifelse(a <= 3, "1~3",
+                         ifelse(a <= 6, "4~6", ">6"))))
+PosNodes = relevel(PosNodes, ref = "0")
+## Tumor size
+a = medical$`Tumor Size` 
+TumorSize = as_factor(ifelse(a < 2, "0~2", 
+                   ifelse(a < 3, "2~3",
+                          ifelse(a < 4, "3~4",
+                                 ifelse(a < 5, "4~5", ">5")))))
+TumorSize = relevel(TumorSize, ref="0~2")
+## Physical activity 
+a = phbase$`NEW METS` 
+PhysicalAct = ifelse(a <= 210, "<210", 
+                      ifelse(a <= 615, "211~615",
+                             ifelse(a <= 1290, "616~1290", ">1290"))) 
+## Energy intake
+b = matrix(NA, nrow = length(a), ncol=1)
+colnames(b) = "KCal"
+b[endpoint$ID %in% nds$ID] = nds$Kcal
+KCal = as_factor(ifelse(b <= 1430, "<1430",
+              ifelse(b <= 1680, "1430~1680",
+                     ifelse(b <= 1980, "1681~1980", 
+                            ifelse(b > 1980, ">1980", NA)))))
+KCal = relevel(KCal, ref="<1430")
+
+##### PUT THEM TOGETHER #####
+AllCauseMortalityData = data.frame(
+  SurvTime, Group, Status, AgeIdx, CancerStage, HormoneRecep, TimeDiagRand,
+        TumorDiff, PosNodes, TumorSize, PhysicalAct, KCal
+)
+library(DT)
+AllCauseMortalityData %>%
+  mutate(SurvTime = round(SurvTime, 3),
+         Status = ifelse(Status==0, "Alive", "Dead")) %>%
+  datatable(., extensions = 'Scroller', options = list(
+    deferRender = TRUE,
+    scrollY = 200,
+    scroller = TRUE
+))
+```
+
+## 2 Imputation
+```{R}
+library(miceRanger)
+ImputedAll <- AllCauseMortalityData %>%
+  miceRanger(
+  m = 1, 
+  returnModels = TRUE,
+  verbose = TRUE
+)
+ImputedData = as.data.frame(completeData(ImputedAll)[[1]])
+```
+### Quality Check
+```{R}
+#plotModelError(ImputedAll, vars = 'allNumeric')
+#plotDistributions(ImputedAll, vars = 'allNumeric')
+plotVarImportance(ImputedAll)
+```
+
+## 3 Variable Selection
+```{r}
+library(glmnet)
+library(ncvreg)
+```
+
+### Forward and Backward Selection
+```{R}
+fit.single <- coxph(Surv(SurvTime, Status) ~ Group, data = ImputedData)
+fit.forward <- MASS::stepAIC(fit.single, 
+                              scope=list(lower=~Group,
+                                         upper=~Group + AgeIdx + CancerStage +
+                                           HormoneRecep + TimeDiagRand + TumorDiff +
+                                           PosNodes + TumorSize + PhysicalAct + KCal),
+                              direction = "forward", trace = TRUE)
+summary(fit.forward)
+
+fit.all <- coxph(Surv(SurvTime, Status) ~ Group + AgeIdx + CancerStage + HormoneRecep + TimeDiagRand + TumorDiff + PosNodes + TumorSize + PhysicalAct + KCal, data = ImputedData)
+fit.backward <- MASS::stepAIC(fit.all, 
+                              scope=list(lower=~Group,
+                                         upper=~Group + AgeIdx + CancerStage +
+                                           HormoneRecep + TimeDiagRand + TumorDiff +
+                                           PosNodes + TumorSize + PhysicalAct + KCal),
+                              direction = "backward", trace = TRUE)
+summary(fit.backward)
+```
+
+### LASSO
+```{R}
+num_col = dim(ImputedData[,-c(1,3)])[2]
+fit.lasso   <- glmnet(ImputedData[,-c(1,3)], Surv(ImputedData$SurvTime, ImputedData$Status), alpha = 1, family = 'cox', penalty.factor=c(0, rep(1, num_col-1)), lambda=seq(0, 0.1, 0.01))
+  
+coef(fit.lasso)
+plot(fit.lasso)
+```
+
+### SCAD
+```{R}
+fit.scad = ncvsurv(ImputedData[,-c(1,3)], Surv(ImputedData$SurvTime, ImputedData$Status), penalty = 'SCAD')
+plot(fit.scad)
+```
+
+## 4 Universal and stratified Cox regression
+```{R}
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+
+# Standard table
+UniversalMod = coxph(Surv(SurvTime, Status) ~ ., data=ImputedData)
+tab_model(UniversalMod)
+```
+### Model diagnosis for the universal model
+```{R}
+# Model Diagnosis
+## Martingale Residual
+MartResid = residuals(UniversalMod, type="martingale")
+ggplot(data = ImputedData, mapping = aes(x = CancerStage, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot") +
+    theme_bw() + theme(legend.key = element_blank())
+ggplot(data = ImputedData, mapping = aes(x = KCal, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot") +
+    theme_bw() + theme(legend.key = element_blank())
+ggplot(data = ImputedData, mapping = aes(x = TimeDiagRand, y = MartResid)) +
+    geom_point() +
+    geom_smooth() +
+    labs(title = "Time from Diagnosis to Randomization") +
+    theme_bw() + theme(legend.key = element_blank())
+# Cox-Snell Residual
+Event = ImputedData$Status
+CSResid = -(MartResid - Event)
+fit_coxsnell <- coxph(formula = Surv(CSResid, Event) ~ 1,
+                      ties    = c("efron","breslow","exact")[1])
+
+## Nelson-Aalen estimator for baseline hazard (all covariates zero)
+df_base_haz <- basehaz(fit_coxsnell, centered = FALSE)
+## Plot
+ggplot(data = df_base_haz, mapping = aes(x = time, y = hazard)) +
+    geom_point() +
+    labs(x = "Cox-Snell residuals as pseudo observed times",
+         y = "Estimated cumulative hazard at pseudo observed times") +
+    theme_bw() + theme(legend.key = element_blank()) +
+    geom_abline(intercept = 0, color="blue", cex=1, alpha=0.5)
+
+```
+
+We have already fitted a universal model, now we are going to fit models for both groups.
+
+```{R}
+library(survival)
+library(finalfit)
+
+dependent_os <- "Surv(SurvTime, Status)"
+explanatory <- c("AgeIdx", "CancerStage", "HormoneRecep", "TimeDiagRand", "TumorDiff", "PosNodes", "TumorSize", "PhysicalAct", "KCal")
+# We can also only include covariates specified by one of the variable selection methods.
+#explanatory <- c("AgeIdx", "HormoneRecep", "TimeDiagRand", "PosNodes", "TumorSize")
+ImputedData %>%
+  summary_factorlist(dependent_os, 
+  explanatory, fit_id=TRUE) -> TabStart
+
+TabStart
+```
+
+```{R}
+# Cox model for the intervention group
+ImputedData %>%
+  filter(Group=="Intervention") %>%
+  finalfit(dependent_os, explanatory) -> TabIntervention
+knitr::kable(TabIntervention, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r"))
+ImputedData %>% 
+    filter(Group=="Intervention") %>%
+    hr_plot(dependent_os, explanatory)
+```
+```{R}
+# Cox model for the comparison group
+ImputedData %>%
+  filter(Group=="Comparison") %>%
+  finalfit(dependent_os, explanatory) -> TabComparison
+knitr::kable(TabIntervention, row.names=FALSE, align=c("l", "l", "r", "r", "r", "r"))
+ImputedData %>% 
+    filter(Group=="Comparison") %>%
+    hr_plot(dependent_os, explanatory)
+```
+
+## 4 Model Diagnosis
+### (a) Intervention Group
+```{R}
+# Intervention
+IdxInt = ImputedData$Group=="Intervention"
+IntMod = coxph(Surv(SurvTime, Status) ~ ., data=ImputedData[IdxInt,])
+
+# Martingale Residual
+MartResid = residuals(IntMod, type="martingale")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = CancerStage, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot for Cancer Stage") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = TimeDiagRand, y = MartResid)) +
+    geom_point() +
+    geom_smooth() +
+    labs(title = "Time from Diagnosis to Randomization") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = TumorDiff, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "Tumor Differentiation") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=60,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = KCal, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "KCal") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=0,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxInt,], mapping = aes(x = factor(TumorSize), y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Tumor Size") +
+    theme_bw() + theme(legend.key = element_blank()) + 
+    ylab("Martingale Residual") + xlab("Tumor Size")
+
+# Schoenfeld Individual Test
+test.ph = cox.zph(IntMod)
+ggcoxzph(test.ph)
+
+# Cox-Snell Residual
+Event = ImputedData$Status[IdxInt]
+CSResid = -(MartResid - Event)
+fit_coxsnell <- coxph(formula = Surv(CSResid, Event) ~ 1,
+                      ties    = c("efron","breslow","exact")[1])
+
+## Nelson-Aalen estimator for baseline hazard (all covariates zero)
+df_base_haz <- basehaz(fit_coxsnell, centered = FALSE)
+## Plot
+ggplot(data = df_base_haz, mapping = aes(x = time, y = hazard)) +
+    geom_point() +
+    labs(x = "Cox-Snell residuals as pseudo observed times",
+         y = "Estimated cumulative hazard at pseudo observed times") +
+    theme_bw() + theme(legend.key = element_blank()) +
+    geom_abline(intercept = 0, color="blue", cex=1, alpha=0.5)
+```
+
+### (b) Comparison Group
+```{R}
+# Comparison
+IdxCom = ImputedData$Group=="Comparison"
+ComMod = coxph(Surv(SurvTime, Status) ~ ., data=ImputedData[IdxCom,],  method = 'breslow')
+
+# Martingale Residual
+MartResid = residuals(ComMod, type="martingale")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = CancerStage, y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Martingale Residual Plot for Cancer Stage") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = TimeDiagRand, y = MartResid)) +
+    geom_point() +
+    geom_smooth() +
+    labs(title = "Time from Diagnosis to Randomization") +
+    theme_bw() + theme(legend.key = element_blank()) + ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = TumorDiff, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "Tumor Differentiation") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=60,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = KCal, y = MartResid)) +
+    geom_point() +
+    geom_violin() +
+    labs(title = "KCal") +
+    theme_bw() + theme(legend.key = element_blank(), axis.text.x=element_text(angle=0,hjust=1)) +
+    ylab("Martingale Residual")
+ggplot(data = ImputedData[IdxCom,], mapping = aes(x = factor(TumorSize), y = MartResid)) +
+    geom_violin() +
+    geom_point() +
+    labs(title = "Tumor Size") +
+    theme_bw() + theme(legend.key = element_blank()) + 
+    ylab("Martingale Residual") + xlab("Tumor Size")
+
+# Schoenfeld Individual Test
+test.ph = cox.zph(ComMod)
+ggcoxzph(test.ph)
+
+# Cox-Snell Residual
+Event = ImputedData$Status[IdxCom]
+CSResid = -(MartResid - Event)
+fit_coxsnell <- coxph(formula = Surv(CSResid, Event) ~ 1,
+                      ties    = c("efron","breslow","exact")[1])
+
+## Nelson-Aalen estimator for baseline hazard (all covariates zero)
+df_base_haz <- basehaz(fit_coxsnell, centered = FALSE)
+## Plot
+ggplot(data = df_base_haz, mapping = aes(x = time, y = hazard)) +
+    geom_point() +
+    labs(x = "Cox-Snell residuals as pseudo observed times",
+         y = "Estimated cumulative hazard at pseudo observed times") +
+    theme_bw() + theme(legend.key = element_blank()) +
+    geom_abline(intercept = 0, color="blue", cex=1, alpha=0.5) +
+  labs(title = "Quality of overall fit: Cox-Snell")
+
+```
+
+## 5 Cox Regression for each variable
+```{R}
+explanatory = c("AgeIdx", "CancerStage", "HormoneRecep", 
+        "TumorDiff", "PosNodes", "TumorSize", "PhysicalAct", "KCal")
+for (item in explanatory) {
+  len = ImputedData %>%
+    select(item) %>%
+    unique(.) %>%
+    nrow(.)
+  category = ImputedData %>%
+      select(item) %>%
+      unique(.)
+  hi = item
+  for (i in 1:len) {
+    cat = category[i,]
+    print(paste0("Explanatory: ", hi))
+    print(paste0("Category: ", cat))
+    idx = ImputedData[, hi] == cat
+    print(summary(coxph(Surv(SurvTime, Status) ~ Group, data=ImputedData[idx, ])))
+  }
+}
+```
+
+## 7 Competing Risk Models
+```{R}
+library(fastcmprsk)
+
+AllCauseMortalityData$fstatus = endpoint$`Other Cancer (invasive, not breast) Status as of 6/1/2006`
+AllCauseMortalityData$Recurrence = endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`
+
+CompRiskData <- AllCauseMortalityData %>%
+  miceRanger(
+  m = 1, 
+  returnModels = TRUE,
+  verbose = TRUE
+)
+ImputedCompRiskData = as.data.frame(completeData(CompRiskData)[[1]])
+ImputedCompRiskData$fstatus = as.numeric(relevel(factor(ImputedCompRiskData$fstatus), ref="No evidence of Disease")) - 1
+
+dependent_crr = "Surv(SurvTime, fstatus)"
+explanatory <- c("Group", "AgeIdx", "CancerStage", "HormoneRecep",  "TimeDiagRand", "TumorDiff", "PosNodes", "TumorSize", "PhysicalAct", "KCal")
+
+# Fine and Gray competing risks regression
+ImputedCompRiskData %>%
+  crrmulti(dependent_crr, explanatory) 
+```
+
+## 8 Kaplan-Meier Estimate and Related Tests
+```{R}
+mykable = function(x){
+    knitr::kable(x, row.names = FALSE, align = c("l", "l", "r", "r", "r", "r", "r", "r", "r"))
+}
+
+ImputedData$YearSinceRand = endpoint$`Years from Diagnosis to Death or Censor` - endpoint$`Years from Diagnosis to WHEL Study Entry`
+
+dependent_os = "Surv(YearSinceRand, Status)"
+explanatory = c("Group")
+ImputedData %>% 
+    surv_plot(dependent_os, explanatory, pval = TRUE)
+
+ImputedData %>% 
+    finalfit(dependent_os, explanatory) %>% 
+    mykable()
+
+explanatory = c("Group", "CancerStage")
+ImputedData %>% 
+    surv_plot(dependent_os, explanatory, pval = TRUE)
+
+ImputedData %>% 
+    finalfit(dependent_os, explanatory) %>% 
+    mykable()
+```
+
+
+# (Table 3) Study Events
+```{R}
+# Confirmed breast cancer event
+a1 = endpoint$`Intervention Group`
+b1 = endpoint$`Breast Cancer Status as of 6/1/2006 or last prior contact`
+table(a1, b1)
+# Confirmed deaths
+b2 = endpoint$`Breast Cancer Contribute to Death`
+table(a1, b2)
+```
+
+# Metaheuristics with Applications to Cox's Regression and Variable Selection
+
+## Please put your results here
